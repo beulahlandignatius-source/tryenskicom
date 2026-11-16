@@ -148,6 +148,8 @@ export type ServicePackage = z.infer<typeof packageSchema>;
 
 // ---------- Coaching ----------
 export const coachingConfigSchema = z.object({
+  format: z.enum(["one_to_one", "group"]).default("one_to_one"),
+  groupSize: z.number().int().min(2).max(100).default(10),
   location: z.enum(["video", "phone", "in_person"]).default("video"),
   meetingLink: z.string().default(""),
   windowDays: z.number().int().min(1).max(180).default(30),

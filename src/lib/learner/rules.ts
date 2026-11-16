@@ -17,6 +17,15 @@ export const stateSchema = z.object({
   purchases: z.array(z.object({ id: z.string(), orderNumber: z.string(), date: z.string(), items: z.array(purchaseItem), total: z.number(), status: z.enum(["paid", "pending", "failed"]), method: z.enum(["card", "transfer"]) })).default([]),
   /** name/email/reference are the attendee details given at registration; older registrations may not have them. */
   registrations: z.array(z.object({ eventId: z.string(), date: z.string(), tickets: z.number().int().min(1), attendedAt: z.string().optional(), name: z.string().optional(), email: z.string().optional(), phone: z.string().optional(), reference: z.string().optional() })).default([]),
+  /** Creator coaching and live-session reservations; kept separate from event tickets and purchases. */
+  creatorSessionBookings: z.array(z.object({
+    id: z.string(), creatorHandle: z.string(), itemId: z.string(), kind: z.enum(["coaching", "live"]), scheduledAt: z.string(), createdAt: z.string(),
+    status: z.enum(["requested", "confirmed", "cancelled", "completed", "no_show", "attended"]),
+  })).default([]),
+  /** Coaching sessions from the published sample catalogue, separate from creator-owned offers. */
+  coachingAppointments: z.array(z.object({
+    id: z.string(), resourceId: z.string(), scheduledAt: z.string(), createdAt: z.string(), status: z.enum(["confirmed", "cancelled", "completed"]), cancelledAt: z.string().optional(),
+  })).default([]),
   /** Attendee details saved while registering (resumable), keyed by event id. */
   eventDrafts: z.record(z.object({ qty: z.number().int().min(1), name: z.string(), email: z.string(), phone: z.string(), goal: z.string(), access: z.string(), agree: z.boolean() })).default({}),
   progress: z.record(z.object({ completed: z.array(z.string()), lastAccessed: z.string().optional() })).default({}),
@@ -66,7 +75,7 @@ export type LearnerNotification = LearnerState["notifications"][number];
 /** A brand-new learner: identity only, every list empty. */
 export const initialLearnerState: LearnerState = {
   profile: { fullName: "", displayName: "", email: "", phone: "", bio: "", photo: "", certificateName: "" },
-  wishlist: [], cart: [], purchases: [], registrations: [], eventDrafts: {}, progress: {}, certificates: [], corrections: [], badges: {}, celebrated: [], notifications: [],
+  wishlist: [], cart: [], purchases: [], registrations: [], creatorSessionBookings: [], coachingAppointments: [], eventDrafts: {}, progress: {}, certificates: [], corrections: [], badges: {}, celebrated: [], notifications: [],
   prefs: { inApp: true, eventReminders: true, purchaseUpdates: true, productUpdates: false, announcements: false },
   integrations: {}, security: { twoFactor: false, loginAlerts: true }, support: [], collapsed: false, learningDays: [], hiddenResources: [], shopLibrary: [], quizzes: {}, finance: defaultFinancePrefs,
 };
