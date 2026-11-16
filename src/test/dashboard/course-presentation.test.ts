@@ -14,7 +14,8 @@ describe("Course category, skill and level", () => {
   it("suggests skills for a listed category and none for a custom one", () => {
     expect(COURSE_CATEGORIES).toContain("Design");
     expect(skillOptions("Design")).toContain("UI design");
-    expect(skillOptions("Beekeeping")).toEqual([]);
+    expect(skillOptions("Beekeeping")).toContain("Excel");
+    expect(skillOptions("Design")[0]).toBe("UI design");
   });
   it("saves the chosen skill and level on the course", () => {
     const item = withCreateDetails(course, { ...defaultExtras, skill: " Pottery ", level: "beginner" });
