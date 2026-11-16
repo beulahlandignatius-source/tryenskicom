@@ -135,8 +135,10 @@ const affiliateSchema = z.object({
   id: z.string(),
   name: z.string(),
   email: z.string().email(),
-  status: z.enum(["invited", "active"]),
+  status: z.enum(["invited", "active", "suspended"]),
   date: z.string(),
+  /** Personal commission rate (%) for this affiliate; overrides product and category rates. */
+  rate: z.number().finite().min(1).max(90).optional(),
 });
 export type Affiliate = z.infer<typeof affiliateSchema>;
 const ruleSchema = z.object({
@@ -243,6 +245,8 @@ export const stateSchema = z.object({
   media: z.array(mediaSchema).default([]),
   affiliates: z.array(affiliateSchema).default([]),
   rules: z.array(ruleSchema).default([]),
+  /** Creator's default commission (%) per product category; empty means not set. */
+  categoryRates: z.object({ course: z.number(), ebook: z.number(), live: z.number(), coaching: z.number(), service: z.number() }).partial().default({}),
   programs: z.array(programSchema).default([]),
   landingPages: z.array(landingSchema).default([]),
   leads: z.array(leadSchema).default([]),
