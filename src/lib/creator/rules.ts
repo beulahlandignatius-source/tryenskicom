@@ -173,7 +173,7 @@ const questionSchema = z.object({
   options: z.array(z.string()).default([]), required: z.boolean().default(false),
 });
 export type LandingQuestion = z.infer<typeof questionSchema>;
-const landingSchema = z.object({
+export const landingSchema = z.object({
   id: z.string(),
   title: z.string(),
   slug: z.string(),
