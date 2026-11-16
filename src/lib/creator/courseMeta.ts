@@ -21,8 +21,14 @@ export const SKILLS_BY_CATEGORY: Record<(typeof COURSE_CATEGORIES)[number], stri
   Writing: ["Creative writing", "Blogging", "Technical writing", "Scriptwriting", "Copywriting"],
 };
 
+const EXTRA_SKILLS = ["Accounting software","Acting","Adobe Illustrator","Adobe Photoshop","Adobe Premiere Pro","After Effects","Agile","Agriculture","Animation","Architecture","Artificial intelligence","Baking","Barbering","Beauty and makeup","Blender 3D","Blockchain","Brand strategy","Budgeting","Business analysis","C#","C++","Canva","Carpentry","Catering","ChatGPT and prompting","Child care","Coaching","Cooking","Counselling","Crypto trading","CSS","Customer success","Dance","Data science","Data visualisation","DevOps","Digital marketing","Drawing","Drone piloting","E-commerce","Event planning","Excel","Fashion design","Figma","Film making","Forex trading","Fundraising","Game development","Gardening","Go","Grant writing","Hair styling","HR management","HTML","Illustration","Interior design","Java","JavaScript","Journalism","Kotlin","Law basics","Logistics","Machine learning","Mathematics","Mentoring","Microsoft Office","Negotiation","Networking","Nursing","Painting","Parenting","Php","Pitching","Podcasting","Poetry","Power BI","Product management","Public relations","Real estate","React","Research","Ruby","Rust","Sewing","SQL","Statistics","Stock trading","Supply chain","Swift","Tailoring","Tax","Teaching","Tiktok content","Translation","TypeScript","Video production","Voice over","Web3","Wedding planning","WordPress","YouTube growth"];
+/** Every skill Enski knows of, across all categories, sorted and de-duplicated. */
+export const ALL_SKILLS: string[] = [...new Set([...Object.values(SKILLS_BY_CATEGORY).flat(), ...EXTRA_SKILLS])].sort((a, b) => a.localeCompare(b));
+
+/** Category skills first, then every other skill so creators can search the whole list. */
 export function skillOptions(category: string): string[] {
-  return (SKILLS_BY_CATEGORY as Record<string, string[]>)[category.trim()] ?? [];
+  const own = (SKILLS_BY_CATEGORY as Record<string, string[]>)[category.trim()] ?? [];
+  return [...own, ...ALL_SKILLS.filter((s) => !own.includes(s))];
 }
 
 export const LEVEL_LABEL: Record<(typeof COURSE_LEVELS)[number], string> = {

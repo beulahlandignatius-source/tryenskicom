@@ -67,6 +67,15 @@ function Pager({ page, pages, onPage }: { page: number; pages: number; onPage: (
 const RANGES: [string, string][] = [["7", "Last 7 days"], ["30", "Last 30 days"], ["90", "Last 90 days"], ["all", "All time"]];
 const inRange = (date: string, range: string) => range === "all" || Date.parse(date) >= Date.now() - Number(range) * DAY;
 
+/** Example people shown only when the creator asks for sample data. */
+const SAMPLE_AFFILIATES: [string, string, Affiliate["status"], number][] = [
+  ["Chiamaka Obi", "chiamaka.obi@example.com", "active", 120],
+  ["Tunde Bakare", "tunde.bakare@example.com", "active", 64],
+  ["Aisha Bello", "aisha.bello@example.com", "suspended", 41],
+  ["Emeka Nwosu", "emeka.nwosu@example.com", "active", 22],
+  ["Funke Adeyemi", "funke.adeyemi@example.com", "invited", 5],
+];
+
 /* ---------- Dashboard ---------- */
 export function AffiliatesPage() {
   const { state, update } = useCreator();
@@ -103,9 +112,15 @@ export function AffiliatesPage() {
   const reset = (fn: (v: string) => void) => (v: string) => { fn(v); setPage(1); };
 
   const button = <Button onClick={() => { setError(""); setInvite(true); }}><UserPlus />Invite affiliate</Button>;
+  const loadSample = () => {
+    const now = Date.now();
+    const sample: Affiliate[] = SAMPLE_AFFILIATES.map(([name, email, st, days], i) => ({ id: `sample-aff-${i}`, name, email, status: st, date: new Date(now - days * DAY).toISOString() }));
+    update((s) => ({ affiliates: [...sample, ...s.affiliates.filter((a) => !a.id.startsWith("sample-aff-"))] }));
+    toast.success("Sample affiliates added", { description: "These are examples so you can see how the page works. Remove them any time." });
+  };
   return (
     <div>
-      <PageHeader eyebrow="Affiliates" title="Affiliates" description="People who promote your products, and what they bring in." actions={button} />
+      <PageHeader eyebrow="Affiliates" title="Affiliates" description="Manage your affiliate users and their promotions." actions={button} />
       <AffiliateTabs />
       <StatGroup title="People">
         <Stat icon={Users} label="Total affiliates" value={state.affiliates.length} />
@@ -179,7 +194,7 @@ export function AffiliatesPage() {
               </li>
             ))}
           </ul>
-        ) : <EmptyState icon={Users} title={state.affiliates.length ? "No matching affiliates" : "No affiliates yet"} description={state.affiliates.length ? "Try another search or filter." : "Invite affiliates, or add products to Ongoing Promotions so affiliates can find them."} action={state.affiliates.length ? undefined : button} compact />}
+        ) : <EmptyState icon={Users} title={state.affiliates.length ? "No matching affiliates" : "No affiliates yet"} description={state.affiliates.length ? "Try another search or filter." : "Invite affiliates, or add products to Ongoing Promotions so affiliates can find them."} action={state.affiliates.length ? undefined : <div className="flex flex-wrap justify-center gap-2">{button}<Button variant="outline" onClick={loadSample}>Show sample affiliates</Button></div>} compact />}
         <Pager page={pg.page} pages={pg.pages} onPage={setPage} />
       </Panel>
 

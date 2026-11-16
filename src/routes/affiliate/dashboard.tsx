@@ -70,11 +70,20 @@ function Dashboard() {
         </div>
       </section>
 
+      <section className="surface mb-5 p-5" aria-labelledby="aff-balance">
+        <p className="flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.14em] text-cobalt"><Wallet className="h-3.5 w-3.5" aria-hidden="true" /> Available balance</p>
+        <p id="aff-balance" className="mt-2 text-3xl font-extrabold tabular-nums">{naira(b.available)}</p>
+        <p className="text-xs font-semibold text-muted-foreground">{naira(b.pending)} pending · {state.bank ? "Payout account added" : "No payout account yet"}</p>
+        <div className="mt-4 grid grid-cols-2 gap-2">
+          <Button asChild><Link to="/affiliate/wallet/withdraw" search={{}}>Withdraw</Link></Button>
+          <Button asChild variant="outline"><Link to="/affiliate/wallet">Wallet</Link></Button>
+        </div>
+      </section>
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+        <Link to="/affiliate/transactions" className="dash-link-card" aria-label={`Total earnings: ${naira(b.earnings)}. Open commissions`}><StatCard icon={Coins} label="Total earnings" value={naira(b.earnings)} hint="Commission history" tone="midnight" featured /></Link>
         <Link to="/affiliate/performance" className="dash-link-card" aria-label={`Total clicks: ${b.clicks}. Open performance report`}><StatCard icon={MousePointerClick} label="Total clicks" value={String(b.clicks)} hint="See the click report" /></Link>
         <Link to="/affiliate/referrals" className="dash-link-card" aria-label={`Total referrals: ${b.referrals}. Open referrals`}><StatCard icon={Users} label="Total referrals" value={String(b.referrals)} hint="See who signed up" tone="sky" /></Link>
         <Link to="/affiliate/performance" className="dash-link-card" aria-label={`Conversions: ${b.conversions}. Open performance report`}><StatCard icon={Target} label="Conversions" value={String(b.conversions)} hint="Completed purchases" tone="lime" /></Link>
-        <Link to="/affiliate/transactions" className="dash-link-card" aria-label={`Total earnings: ${naira(b.earnings)}. Open commissions`}><StatCard icon={Coins} label="Total earnings" value={naira(b.earnings)} hint="Commission history" tone="midnight" featured /></Link>
       </div>
 
       <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
@@ -116,15 +125,6 @@ function Dashboard() {
         </Panel>
 
         <div className="flex flex-col gap-6">
-          <section className="surface p-5" aria-labelledby="aff-balance">
-            <p className="flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.14em] text-cobalt"><Wallet className="h-3.5 w-3.5" aria-hidden="true" /> Available balance</p>
-            <p id="aff-balance" className="mt-2 text-3xl font-extrabold tabular-nums">{naira(b.available)}</p>
-            <p className="text-xs font-semibold text-muted-foreground">{naira(b.pending)} pending · {state.bank ? "Payout account added" : "No payout account yet"}</p>
-            <div className="mt-4 grid grid-cols-2 gap-2">
-              <Button asChild><Link to="/affiliate/wallet/withdraw" search={{}}>Withdraw</Link></Button>
-              <Button asChild variant="outline"><Link to="/affiliate/wallet">Wallet</Link></Button>
-            </div>
-          </section>
           <Panel title="Your referral links" actions={<Link to="/affiliate/my-affiliations" className="text-xs font-bold text-cobalt">All links</Link>}>
             {promoting.length ? (
               <ul className="divide-y">

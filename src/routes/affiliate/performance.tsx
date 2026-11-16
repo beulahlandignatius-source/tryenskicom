@@ -6,6 +6,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/dashboard
 import { EmptyState, EmptyTable, FilterSelect, PageHeader, Panel, StatCard, dateRanges } from "@/components/affiliate/ui";
 import { meta } from "@/lib/affiliate/meta";
 import { useAffiliate } from "@/lib/affiliate/store";
+import { prototypeBalances } from "@/lib/affiliate/rules";
+import { naira } from "@/lib/affiliate/products";
 import { products } from "@/lib/affiliate/products";
 import { TrendBars, ShareDonut, periodBuckets } from "@/components/shared/charts/DashCharts";
 import { ConversionFunnel, ReferralSources } from "@/components/affiliate/Insights";
@@ -17,6 +19,7 @@ export const Route = createFileRoute("/affiliate/performance")({
 
 function Performance() {
   const { state } = useAffiliate();
+  const bal = prototypeBalances;
   const promoted = products.filter((p) => state.joined.includes(p.id));
   const [range, setRange] = useState("30");
   const [metric, setMetric] = useState("clicks");
@@ -24,6 +27,16 @@ function Performance() {
   return (
     <div>
       <PageHeader eyebrow="Performance" title="How your links are doing" description="Track clicks, referrals and conversions across everything you promote." actions={<FilterSelect value={range} onChange={setRange} options={dateRanges} className="w-40" />} />
+      <section className="surface mb-5 flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between" aria-label="Earnings and withdrawal">
+        <div className="grid grid-cols-2 gap-6">
+          <div><p className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-cobalt">Total earnings</p><p className="mt-1 text-2xl font-extrabold tabular-nums sm:text-3xl">{naira(bal.earnings)}</p></div>
+          <div><p className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-cobalt">Available</p><p className="mt-1 text-2xl font-extrabold tabular-nums sm:text-3xl">{naira(bal.available)}</p></div>
+        </div>
+        <div className="grid grid-cols-2 gap-2 sm:flex">
+          <Button asChild><Link to="/affiliate/wallet/withdraw" search={{}}>Withdraw</Link></Button>
+          <Button asChild variant="outline"><Link to="/affiliate/wallet">Wallet</Link></Button>
+        </div>
+      </section>
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         <StatCard icon={MousePointerClick} label="Clicks" value="0" hint={label} />
         <StatCard icon={Users} label="Referrals" value="0" hint={label} tone="sky" />
@@ -46,7 +59,7 @@ function Performance() {
           <ShareDonut data={categoryShare(promoted)} center={String(promoted.length)} centerLabel={promoted.length === 1 ? "product" : "products"} empty="Promote a product from the market to see your mix here." />
         </Panel>
         <Panel title="Earnings by topic" description="Commission earned from each topic">
-          <TrendBars className="h-52" data={categoryShare(products).map((c) => ({ label: c.label, value: 0 }))} name="Commission" format={(v) => `₦${v.toLocaleString()}`} color="var(--chart-orange)" empty="No commission yet" />
+          <TrendBars className="h-52" data={categoryShare(products).map((c) => ({ label: c.label, value: 0 }))} name="Commission" format={(v) => `₦${v.toLocaleString()}`} multicolor empty="No commission yet" />
         </Panel>
       </div>
       <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">

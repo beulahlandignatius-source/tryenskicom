@@ -9,8 +9,8 @@ const axis = { fill: "var(--muted-foreground)", fontSize: 11 };
 export type TrendPoint = { label: string; value: number };
 
 /** Bar chart over a period. With no activity the bars sit at zero and a calm note explains why. */
-export function TrendBars({ data, name, format = (v) => String(v), empty, className, color = "var(--cobalt)" }: {
-  data: TrendPoint[]; name: string; format?: (v: number) => string; empty?: string; className?: string; color?: string;
+export function TrendBars({ data, name, format = (v) => String(v), empty, className, color = "var(--cobalt)", multicolor }: {
+  data: TrendPoint[]; name: string; format?: (v: number) => string; empty?: string; className?: string; color?: string; multicolor?: boolean;
 }) {
   const none = data.every((d) => !d.value);
   return (
@@ -27,7 +27,7 @@ export function TrendBars({ data, name, format = (v) => String(v), empty, classN
           <XAxis dataKey="label" tick={axis} tickLine={false} axisLine={false} interval="preserveStartEnd" />
           <YAxis tick={axis} tickLine={false} axisLine={false} allowDecimals={false} domain={[0, (m: number) => Math.max(m, 4)]} tickFormatter={(v) => format(Number(v))} width={52} />
           <Tooltip formatter={(v) => [format(Number(v)), name]} contentStyle={tip} cursor={{ fill: "var(--ice)" }} />
-          <Bar dataKey="value" fill={`url(#bar-${name.replace(/\W/g, "")})`} radius={[6, 6, 0, 0]} maxBarSize={34} minPointSize={none ? 3 : 0} />
+          <Bar dataKey="value" fill={`url(#bar-${name.replace(/\W/g, "")})`} radius={[6, 6, 0, 0]} maxBarSize={34} minPointSize={none ? 3 : 0}>{multicolor && data.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}</Bar>
         </BarChart>
       </ResponsiveContainer>
       {none && empty && (
