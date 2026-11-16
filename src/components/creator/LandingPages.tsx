@@ -20,12 +20,12 @@ import { CreatorNotFound, ItemStatus, copyText, downloadCsv, shortDate } from ".
 import { LandingBuilder } from "./landing/Builder";
 import { PagePreview } from "./landing/PagePreview";
 import { conversionRate, pageUrl, templateName } from "@/lib/creator/landing";
-function PageThumb({ page, className }: { page: LandingPage; className?: string }) {
+function PageThumb({ page, className }: { page: LandingPage; className?: string | undefined }) {
   if (page.mode === "import") return <div data-surface="dark" className={cn("bg-brand-panel grid place-items-center rounded-[14px] font-mono text-xs text-lime", className)} aria-hidden="true">&lt;AI design /&gt;</div>;
   if (["spotlight", "split", "minimal"].includes(page.template)) return <TemplateThumb id={page.template} cover={page.cover} className={className} />;
   return <div className={cn("pointer-events-none overflow-hidden rounded-[14px] bg-card ring-1 ring-line", className)} aria-hidden="true"><div className="w-[1000px] origin-top-left scale-[0.32]"><PagePreview page={page} device="desktop" store="" /></div></div>;
 }
-function TemplateThumb({ id, cover, className }: { id: LandingPage["template"]; cover?: string; className?: string }) {
+function TemplateThumb({ id, cover, className }: { id: LandingPage["template"]; cover?: string; className?: string | undefined }) {
   const img = cover ? <img src={cover} alt="" className="h-full w-full object-cover" /> : <div data-surface="dark" className="bg-brand-panel h-full w-full" />;
   return (
     <div className={cn("landing-thumb relative overflow-hidden rounded-[14px] bg-card ring-1 ring-line", className)} aria-hidden="true">
