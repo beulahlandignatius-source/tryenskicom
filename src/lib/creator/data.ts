@@ -37,7 +37,7 @@ export const initialCreatorState: CreatorState = {
   notificationsRead: [],
   notificationsDismissed: [],
   profile: { firstName: "", lastName: "", email: "", phone: "", bio: "", photo: "" },
-  storefront: { name: "", handle: "", tagline: "", about: "", published: false, banner: "", bannerSource: "none", bannerWords: { headline: "", subline: "", style: "cobalt" } },
+  storefront: { name: "", handle: "", tagline: "", about: "", published: false, banner: "", bannerSource: "none", bannerWords: { headline: "", subline: "", style: "cobalt" }, experienceYears: null, location: "", expertise: "", languages: "", credentials: "" },
   storePage: { accent: "cobalt", bannerY: 50, bio: "", video: "", videoName: "", portfolio: "", socials: { instagram: "", youtube: "", linkedin: "", tiktok: "", x: "" }, achievements: [], featuredId: "", hiddenIds: [], order: [], testimonials: [] },
   availability: {
     timezone: "Africa/Lagos",
