@@ -168,7 +168,7 @@ export function AffiliatesPage() {
       </Panel>
 
       <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:flex-wrap">
-        <div className="flex w-full lg:w-80 [&>div]:max-w-none"><SearchInput value={q} onChange={reset(setQ)} placeholder="Search affiliate, email, code or product" /></div>
+        <div className="flex w-full lg:w-80 [&>div]:max-w-none"><SearchInput value={q} onChange={reset(setQ)} placeholder="Search by name, email, username, or product" /></div>
         <FilterSelect label="Account status" value={status} onChange={reset(setStatus)} options={[["all", "All statuses"], ["active", "Active"], ["invited", "Invited"], ["suspended", "Suspended"]]} />
         <FilterSelect label="Product type" value={kind} onChange={reset(setKind)} options={[["all", "All types"], ...COMMISSION_CATEGORIES.map((c) => [c.kind, c.label] as [string, string])]} />
         <FilterSelect label="Product" value={product} onChange={reset(setProduct)} options={[["all", "All products"], ...state.programs.map((p) => [p.itemId, state.items.find((i) => i.id === p.itemId)?.title ?? "Unavailable"] as [string, string])]} />

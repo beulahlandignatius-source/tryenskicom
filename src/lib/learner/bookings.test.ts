@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { learnerBookings, upcomingListings } from "./bookings";
 import { events, resources } from "./catalog";
-import { cancelCoachingAppointment, coachingSlots, createCoachingAppointment } from "./coaching";
+import { cancelCoachingAppointment, coachingSlots, createCoachingAppointment, rescheduleCoachingAppointment } from "./coaching";
 import { initialLearnerState } from "./rules";
 
 describe("learner bookings", () => {
@@ -26,7 +26,13 @@ describe("learner bookings", () => {
     const created = createCoachingAppointment(initialLearnerState, coaching.id, slot, Date.parse("2026-11-16T09:00:00"));
     expect(created.coachingAppointments).toHaveLength(1);
     const saved = { ...initialLearnerState, ...created };
-    const cancelled = cancelCoachingAppointment(saved, saved.coachingAppointments[0]?.id ?? "", Date.parse("2026-11-16T09:00:00"));
+    const newSlot = coachingSlots(saved.coachingAppointments, coaching.id, new Date("2026-11-16T09:00:00"), 10).at(0)?.iso;
+    expect(newSlot).toBeDefined();
+    if (!newSlot) return;
+    const appointmentId = saved.coachingAppointments[0]?.id ?? "";
+    const moved = rescheduleCoachingAppointment(saved, appointmentId, newSlot, Date.parse("2026-11-16T09:00:00"));
+    expect(moved.coachingAppointments?.[0]?.scheduledAt).toBe(newSlot);
+    const cancelled = cancelCoachingAppointment({ ...saved, ...moved }, appointmentId, Date.parse("2026-11-16T09:00:00"));
     expect(cancelled.coachingAppointments?.[0]?.status).toBe("cancelled");
   });
 });

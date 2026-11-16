@@ -60,7 +60,7 @@ export function SessionDetails({ handle, itemId, kind }: { handle: string; itemI
       itemTitle: offer.item.title,
       creatorName: offer.owner,
       image: offer.item.image,
-      online: booking.online,
+      online: booking.online ?? true,
       meetingLink: booking.meetingLink ?? "",
       status: booking.status,
     };
