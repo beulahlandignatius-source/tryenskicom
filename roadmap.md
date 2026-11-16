@@ -3,6 +3,13 @@
 ## Rules carried over
 - Frontend-only, no disclaimers; facilitators inside Creator; no admin work; Charm artwork unchanged; ChatGPT course ₦5,000 everywhere
 
+## Current request — coaching, bookings, live sessions and affiliate usernames
+- [ ] Creator: manage simulated coaching and live bookings, attendance, rescheduling, cancellation and session states
+- [ ] Learner: discover creator coaching/live offers, book/reschedule/cancel, and access session details
+- [ ] Keep creator and learner records role-specific and device-local; do not add payment or broadcast flows
+- [ ] Add optional affiliate usernames to records, list display and search
+- [ ] Add focused tests and verify the key creator/learner journeys
+
 ## Batch 10 — final QA (Nov 13 2026)
 - [x] Link crawl: every internal link on every page resolves
 - [x] Accessibility scan (names, labels, contrast, focus, targets)

@@ -109,6 +109,7 @@ import { Route as LearnerGuidesRouteImport } from './routes/learner/guides'
 import { Route as LearnerHelpRouteImport } from './routes/learner/help'
 import { Route as LearnerPurchasesRouteImport } from './routes/learner/purchases'
 import { Route as LearnerResourcesRouteImport } from './routes/learner/resources'
+import { Route as LearnerSessionRouteImport } from './routes/learner/session'
 import { Route as LearnerUpcomingRouteImport } from './routes/learner/upcoming'
 import { Route as LearnerWishlistRouteImport } from './routes/learner/wishlist'
 import { Route as OrdersReferenceRouteImport } from './routes/orders.$reference'
@@ -730,6 +731,11 @@ const LearnerPurchasesRoute = LearnerPurchasesRouteImport.update({
 const LearnerResourcesRoute = LearnerResourcesRouteImport.update({
   id: '/resources',
   path: '/resources',
+  getParentRoute: () => LearnerRouteRoute,
+} as any)
+const LearnerSessionRoute = LearnerSessionRouteImport.update({
+  id: '/session',
+  path: '/session',
   getParentRoute: () => LearnerRouteRoute,
 } as any)
 const LearnerUpcomingRoute = LearnerUpcomingRouteImport.update({
@@ -1493,6 +1499,7 @@ export interface FileRoutesByFullPath {
   '/learner/help': typeof LearnerHelpRoute
   '/learner/purchases': typeof LearnerPurchasesRoute
   '/learner/resources': typeof LearnerResourcesRoute
+  '/learner/session': typeof LearnerSessionRoute
   '/learner/upcoming': typeof LearnerUpcomingRoute
   '/learner/wishlist': typeof LearnerWishlistRoute
   '/orders/$reference': typeof OrdersReferenceRoute
@@ -1711,6 +1718,7 @@ export interface FileRoutesByTo {
   '/learner/help': typeof LearnerHelpRoute
   '/learner/purchases': typeof LearnerPurchasesRoute
   '/learner/resources': typeof LearnerResourcesRoute
+  '/learner/session': typeof LearnerSessionRoute
   '/learner/upcoming': typeof LearnerUpcomingRoute
   '/learner/wishlist': typeof LearnerWishlistRoute
   '/orders/$reference': typeof OrdersReferenceRoute
@@ -1935,6 +1943,7 @@ export interface FileRoutesById {
   '/learner/help': typeof LearnerHelpRoute
   '/learner/purchases': typeof LearnerPurchasesRoute
   '/learner/resources': typeof LearnerResourcesRoute
+  '/learner/session': typeof LearnerSessionRoute
   '/learner/upcoming': typeof LearnerUpcomingRoute
   '/learner/wishlist': typeof LearnerWishlistRoute
   '/orders/$reference': typeof OrdersReferenceRoute
@@ -2160,6 +2169,7 @@ export interface FileRouteTypes {
     | '/learner/help'
     | '/learner/purchases'
     | '/learner/resources'
+    | '/learner/session'
     | '/learner/upcoming'
     | '/learner/wishlist'
     | '/orders/$reference'
@@ -2378,6 +2388,7 @@ export interface FileRouteTypes {
     | '/learner/help'
     | '/learner/purchases'
     | '/learner/resources'
+    | '/learner/session'
     | '/learner/upcoming'
     | '/learner/wishlist'
     | '/orders/$reference'
@@ -2601,6 +2612,7 @@ export interface FileRouteTypes {
     | '/learner/help'
     | '/learner/purchases'
     | '/learner/resources'
+    | '/learner/session'
     | '/learner/upcoming'
     | '/learner/wishlist'
     | '/orders/$reference'
@@ -3474,6 +3486,13 @@ declare module '@tanstack/react-router' {
       path: '/resources'
       fullPath: '/learner/resources'
       preLoaderRoute: typeof LearnerResourcesRouteImport
+      parentRoute: typeof LearnerRouteRoute
+    }
+    '/learner/session': {
+      id: '/learner/session'
+      path: '/session'
+      fullPath: '/learner/session'
+      preLoaderRoute: typeof LearnerSessionRouteImport
       parentRoute: typeof LearnerRouteRoute
     }
     '/learner/upcoming': {
@@ -4642,6 +4661,7 @@ interface LearnerRouteRouteChildren {
   LearnerHelpRoute: typeof LearnerHelpRoute
   LearnerPurchasesRoute: typeof LearnerPurchasesRoute
   LearnerResourcesRoute: typeof LearnerResourcesRoute
+  LearnerSessionRoute: typeof LearnerSessionRoute
   LearnerUpcomingRoute: typeof LearnerUpcomingRoute
   LearnerWishlistRoute: typeof LearnerWishlistRoute
   LearnerIndexRoute: typeof LearnerIndexRoute
@@ -4682,6 +4702,7 @@ const LearnerRouteRouteChildren: LearnerRouteRouteChildren = {
   LearnerHelpRoute: LearnerHelpRoute,
   LearnerPurchasesRoute: LearnerPurchasesRoute,
   LearnerResourcesRoute: LearnerResourcesRoute,
+  LearnerSessionRoute: LearnerSessionRoute,
   LearnerUpcomingRoute: LearnerUpcomingRoute,
   LearnerWishlistRoute: LearnerWishlistRoute,
   LearnerIndexRoute: LearnerIndexRoute,

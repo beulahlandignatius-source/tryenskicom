@@ -95,6 +95,29 @@ export function LearnerProvider({ children }: { children: ReactNode }) {
       setStorageError(true);
     }
   }, [state, ready]);
+  useEffect(() => {
+    if (!ready) return;
+    const key = accountStorageKey(STORAGE_KEY);
+    const refresh = (changedKey: string | null) => {
+      if (changedKey !== key) return;
+      try {
+        const raw = localStorage.getItem(key);
+        if (!raw) return;
+        const parsed = stateSchema.safeParse(JSON.parse(raw));
+        if (parsed.success) setState(withIdentity(withPrintedNames(parsed.data)));
+      } catch {
+        setStorageError(true);
+      }
+    };
+    const onSessionUpdate = (event: Event) => refresh((event as CustomEvent<string>).detail ?? null);
+    const onStorage = (event: StorageEvent) => refresh(event.key);
+    window.addEventListener("enski:learner-session-updated", onSessionUpdate);
+    window.addEventListener("storage", onStorage);
+    return () => {
+      window.removeEventListener("enski:learner-session-updated", onSessionUpdate);
+      window.removeEventListener("storage", onStorage);
+    };
+  }, [ready]);
   // Keep the shared names in step when they're changed here (e.g. the certificate "Edit name" dialog).
   const { fullName, displayName, certificateName, email } = state.profile;
   useEffect(() => {

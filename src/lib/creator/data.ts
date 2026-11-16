@@ -27,6 +27,7 @@ export const initialCreatorState: CreatorState = {
   reviews: [],
   media: [],
   affiliates: [],
+  sessionBookings: [],
   rules: [],
   categoryRates: {},
   programs: [],

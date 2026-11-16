@@ -16,7 +16,16 @@ export const stateSchema = z.object({
   cart: z.array(ref.extend({ qty: z.number().int().min(1), addedAt: z.string() })).default([]),
   purchases: z.array(z.object({ id: z.string(), orderNumber: z.string(), date: z.string(), items: z.array(purchaseItem), total: z.number(), status: z.enum(["paid", "pending", "failed"]), method: z.enum(["card", "transfer"]) })).default([]),
   /** name/email/reference are the attendee details given at registration; older registrations may not have them. */
-  registrations: z.array(z.object({ eventId: z.string(), date: z.string(), tickets: z.number().int().min(1), attendedAt: z.string().optional(), name: z.string().optional(), email: z.string().optional(), phone: z.string().optional(), reference: z.string().optional() })).default([]),
+  registrations: z.array(z.object({ eventId: z.string(), date: z.string(), tickets: z.number().int().min(1), attendedAt: z.string().optional(), cancelledAt: z.string().optional(), name: z.string().optional(), email: z.string().optional(), phone: z.string().optional(), reference: z.string().optional() })).default([]),
+  /** Creator coaching and live-session reservations; kept separate from event tickets and purchases. */
+  creatorSessionBookings: z.array(z.object({
+    id: z.string(), creatorHandle: z.string(), itemId: z.string(), kind: z.enum(["coaching", "live"]), scheduledAt: z.string(), createdAt: z.string(), itemTitle: z.string().default("Session"), creatorName: z.string().default("Creator"), image: z.string().default(""), online: z.boolean().default(true), meetingLink: z.string().default(""),
+    status: z.enum(["requested", "confirmed", "live", "cancelled", "completed", "no_show", "attended"]),
+  })).default([]),
+  /** Coaching sessions from the published sample catalogue, separate from creator-owned offers. */
+  coachingAppointments: z.array(z.object({
+    id: z.string(), resourceId: z.string(), scheduledAt: z.string(), createdAt: z.string(), status: z.enum(["confirmed", "cancelled", "completed"]), cancelledAt: z.string().optional(),
+  })).default([]),
   /** Attendee details saved while registering (resumable), keyed by event id. */
   eventDrafts: z.record(z.object({ qty: z.number().int().min(1), name: z.string(), email: z.string(), phone: z.string(), goal: z.string(), access: z.string(), agree: z.boolean() })).default({}),
   progress: z.record(z.object({ completed: z.array(z.string()), lastAccessed: z.string().optional() })).default({}),
@@ -66,7 +75,7 @@ export type LearnerNotification = LearnerState["notifications"][number];
 /** A brand-new learner: identity only, every list empty. */
 export const initialLearnerState: LearnerState = {
   profile: { fullName: "", displayName: "", email: "", phone: "", bio: "", photo: "", certificateName: "" },
-  wishlist: [], cart: [], purchases: [], registrations: [], eventDrafts: {}, progress: {}, certificates: [], corrections: [], badges: {}, celebrated: [], notifications: [],
+  wishlist: [], cart: [], purchases: [], registrations: [], creatorSessionBookings: [], coachingAppointments: [], eventDrafts: {}, progress: {}, certificates: [], corrections: [], badges: {}, celebrated: [], notifications: [],
   prefs: { inApp: true, eventReminders: true, purchaseUpdates: true, productUpdates: false, announcements: false },
   integrations: {}, security: { twoFactor: false, loginAlerts: true }, support: [], collapsed: false, learningDays: [], hiddenResources: [], shopLibrary: [], quizzes: {}, finance: defaultFinancePrefs,
 };
@@ -83,7 +92,7 @@ export function notify(s: LearnerState, type: LearnerNotification["type"], title
 export const ownedResourceIds = (s: LearnerState) =>
   [...new Set(s.purchases.filter((p) => p.status === "paid").flatMap((p) => p.items.filter((i) => i.kind === "resource").map((i) => i.id)))];
 export const owns = (s: LearnerState, id: string) => ownedResourceIds(s).includes(id);
-export const registration = (s: LearnerState, eventId: string) => s.registrations.find((r) => r.eventId === eventId);
+export const registration = (s: LearnerState, eventId: string) => s.registrations.find((r) => r.eventId === eventId && !r.cancelledAt);
 export const itemInfo = (r: ItemRef) => {
   const x = r.kind === "resource" ? findResource(r.id) : findEvent(r.id);
   return x ? { title: x.title, price: x.price, image: x.image, by: "creator" in x ? x.creator : x.host } : null;
@@ -224,7 +233,7 @@ export const cancelRegistration = (s: LearnerState, eventId: string): Partial<Le
   const r = registration(s, eventId);
   // Paid tickets come from a purchase; the demo has no refund flow, so only free registrations can be cancelled.
   if (!e || !r || e.price > 0 || r.attendedAt) return {};
-  return { registrations: s.registrations.filter((x) => x.eventId !== eventId) };
+  return { registrations: s.registrations.map((x) => x.eventId === eventId ? { ...x, cancelledAt: new Date().toISOString() } : x) };
 };
 export const markAttended = (s: LearnerState, eventId: string): Partial<LearnerState> =>
   registration(s, eventId) && !registration(s, eventId)!.attendedAt ? { registrations: s.registrations.map((r) => (r.eventId === eventId ? { ...r, attendedAt: new Date().toISOString() } : r)) } : {};

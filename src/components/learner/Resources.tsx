@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { undoToast } from "@/lib/shared/undo";
-import { Award, BookOpen, CheckCircle2, Circle, Download, Eye, EyeOff, Library, Lock, PlayCircle, ShoppingCart, Clock } from "lucide-react";
+import { Award, BookOpen, CalendarClock, CheckCircle2, Circle, Download, Eye, EyeOff, Library, Lock, PlayCircle, ShoppingCart, Clock } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/dashboard-ui/button";
@@ -9,6 +9,8 @@ import { categories } from "@/lib/affiliate/products";
 import { findResource, isPreviewResource, resourceBuyLabel, unitWord, type LearnerResource } from "@/lib/learner/catalog";
 import { addToCart, canAddToCart, ownedResourceIds, owns, resourceProgress, toggleUnit, touchResource } from "@/lib/learner/rules";
 import { useLearner } from "@/lib/learner/store";
+import { cancelCoachingAppointment, coachingSlots, createCoachingAppointment, rescheduleCoachingAppointment, type CoachingAppointment } from "@/lib/learner/coaching";
+import { dayIn, timeIn, useViewerTimeZone } from "@/lib/learner/timezone";
 import { cn } from "@/lib/utils";
 import { courseOutline, totalLength, unitLength } from "@/lib/learner/learning";
 import { tablistKeyDown } from "@/lib/keyboard";
@@ -184,7 +186,7 @@ export function ResourceDetails({ id, view }: { id: string; view?: "quiz" | unde
         </div>
         <aside className="lg:sticky lg:top-24 lg:self-start">
           <div className="surface p-5">
-            {owned ? (
+            {r.type === "Coaching" ? <CoachingBookingPanel resource={r} /> : owned ? (
               <>
                 <StatusBadge tone="success">In your library</StatusBadge>
                 <p className="mt-4 text-sm font-bold">Your progress</p>
@@ -222,6 +224,64 @@ export function ResourceDetails({ id, view }: { id: string; view?: "quiz" | unde
           </div>
         </aside>
       </div>
+    </div>
+  );
+}
+
+function CoachingBookingPanel({ resource }: { resource: LearnerResource }) {
+  const { state, update } = useLearner();
+  const timeZone = useViewerTimeZone();
+  const [slot, setSlot] = useState("");
+  const [rescheduling, setRescheduling] = useState(false);
+  const slots = coachingSlots(state.coachingAppointments, resource.id);
+  const appointments = state.coachingAppointments.filter((appointment) => appointment.resourceId === resource.id);
+  const active = appointments.find((appointment) => appointment.status === "confirmed");
+  const previous = appointments.find((appointment) => appointment.status === "cancelled" || appointment.status === "completed");
+  const book = () => {
+    const patch = createCoachingAppointment(state, resource.id, slot);
+    if (!patch.coachingAppointments) {
+      toast.error("That time is no longer available", { description: "Choose another open time." });
+      return;
+    }
+    update(patch);
+    setSlot("");
+    toast.success("Coaching time confirmed", { description: "No payment was taken. Your appointment is saved in My bookings." });
+  };
+  const cancel = (appointment: CoachingAppointment) => {
+    update((current) => cancelCoachingAppointment(current, appointment.id));
+    toast.success("Coaching session cancelled");
+  };
+  const move = (appointment: CoachingAppointment) => {
+    const patch = rescheduleCoachingAppointment(state, appointment.id, slot);
+    if (!patch.coachingAppointments) {
+      toast.error("That time is no longer available", { description: "Choose another open time." });
+      return;
+    }
+    update(patch);
+    setSlot("");
+    setRescheduling(false);
+    toast.success("Coaching time updated");
+  };
+  if (active) return (
+    <div className="space-y-4">
+      <p className="text-2xl font-extrabold tabular-nums">{price(resource.price)}</p>
+      <div className="rounded-xl bg-success-soft p-3 text-sm"><p className="font-bold">Your session is confirmed</p><p className="mt-1 text-muted-foreground">{dayIn(active.scheduledAt, timeZone)} · {timeIn(active.scheduledAt, timeZone)}</p></div>
+      <Button asChild className="w-full"><Link to="/learner/bookings"><CalendarClock />View My bookings</Link></Button>
+      {Date.parse(active.scheduledAt) > Date.now() && <>
+        <Button variant="outline" className="w-full" onClick={() => { setRescheduling(!rescheduling); setSlot(""); }}> {rescheduling ? "Keep current time" : "Reschedule session"}</Button>
+        {rescheduling && <div className="space-y-2"><FilterSelect label="New coaching time" value={slot || "none"} onChange={(value) => setSlot(value === "none" ? "" : value)} className="w-full sm:w-full" options={[["none", "Choose a time"], ...slots.filter((option) => option.iso !== active.scheduledAt).map((option) => [option.iso, `${dayIn(option.iso, timeZone)} · ${timeIn(option.iso, timeZone)}`] as [string, string])]} /><Button className="w-full" disabled={!slot} onClick={() => move(active)}>Save new time</Button></div>}
+        <Button variant="ghost" className="w-full" onClick={() => cancel(active)}>Cancel session</Button>
+      </>}
+    </div>
+  );
+  return (
+    <div className="space-y-4">
+      <p className="text-2xl font-extrabold tabular-nums">{price(resource.price)}</p>
+      <p className="rounded-xl bg-ice p-3 text-xs leading-5 text-cobalt">Pick an open time for a simulated coaching appointment. You will not be charged here.</p>
+      {slots.length ? <FilterSelect label="Available coaching time" value={slot || "none"} onChange={(value) => setSlot(value === "none" ? "" : value)} className="w-full sm:w-full" options={[["none", "Choose a time"], ...slots.map((option) => [option.iso, `${dayIn(option.iso, timeZone)} · ${timeIn(option.iso, timeZone)}`] as [string, string])]} /> : <p className="text-sm text-muted-foreground">No appointment times are open right now.</p>}
+      <Button className="w-full" disabled={!slot} onClick={book}><CalendarClock />Confirm session time</Button>
+      <Button asChild variant="outline" className="w-full"><Link to="/learner/bookings">My bookings</Link></Button>
+      {previous && <p className="text-xs text-muted-foreground">Previous appointment: {dayIn(previous.scheduledAt, timeZone)}</p>}
     </div>
   );
 }

@@ -23,7 +23,10 @@ export function useSlots(item: ProductProps["item"], excludeOrder?: string) {
   const booked = state.orders
     .filter((o) => o.id !== excludeOrder && o.sessionAt && o.status === "paid" && bookingOf(o) === "scheduled")
     .map((o) => o.sessionAt!);
-  return coachingSlots(state.availability.days, state.availability.buffer, item.duration, coachingOf(item), booked, new Date());
+  const groupBookings = state.sessionBookings.filter((booking) => booking.itemId === item.id && booking.kind === "coaching" && booking.status === "confirmed").map((booking) => booking.scheduledAt);
+  const c = coachingOf(item);
+  const slots = coachingSlots(state.availability.days, state.availability.buffer, item.duration, c, [...booked, ...groupBookings], new Date(), 12, c.format === "group" ? c.groupSize : 1);
+  return slots;
 }
 
 export function CoachingOverview({ item, orders }: ProductProps) {
@@ -53,7 +56,7 @@ export const coachingChecklist = (item: ProductProps["item"], availableDays: num
 export function Sessions({ item }: ProductProps) {
   const { patchItem, state } = useProduct(item);
   const c = coachingOf(item);
-  const [f, setF] = useState({ duration: String(item.duration), location: c.location, link: c.meetingLink, window: String(c.windowDays), notice: String(c.noticeHours) });
+  const [f, setF] = useState({ duration: String(item.duration), location: c.location, link: c.meetingLink, window: String(c.windowDays), notice: String(c.noticeHours), format: c.format, groupSize: String(c.groupSize) });
   const [error, setError] = useState("");
   const days = state.availability.days;
   const save = (e: React.FormEvent) => {
@@ -64,13 +67,26 @@ export function Sessions({ item }: ProductProps) {
     if (!Number.isInteger(noticeHours) || noticeHours < 0) return setError("Minimum notice must be 0 hours or more.");
     if (f.location === "video" && f.link && !isUrl(f.link)) return setError("Enter a meeting link that starts with https://");
     setError("");
-    patchItem({ duration, coaching: { ...c, location: f.location, meetingLink: f.link.trim(), windowDays, noticeHours } }, "Session settings updated");
+    const groupSize = Number(f.groupSize);
+    if (!Number.isInteger(groupSize) || groupSize < 2 || groupSize > 100) return setError("Group size must be between 2 and 100.");
+    patchItem({ duration, coaching: { ...c, format: f.format, groupSize, location: f.location, meetingLink: f.link.trim(), windowDays, noticeHours } }, "Session settings updated");
     toast.success("Session settings saved");
   };
   return (
     <div className="grid items-start gap-6 lg:grid-cols-2">
       <Panel title="Session setup">
         <form onSubmit={save} className="space-y-4" noValidate>
+          <fieldset>
+            <legend className="mb-2 text-[13px] font-bold">Session format</legend>
+            <RadioGroup value={f.format} onValueChange={(v) => setF({ ...f, format: v as typeof f.format })} className="grid grid-cols-2 gap-2">
+              {([['one_to_one', '1:1 coaching'], ['group', 'Group coaching']] as const).map(([value, label]) => (
+                <Label key={value} htmlFor={`format-${value}`} className="flex cursor-pointer items-center gap-2 rounded-[14px] border p-3 has-[[data-state=checked]]:border-cobalt has-[[data-state=checked]]:bg-ice">
+                  <RadioGroupItem id={`format-${value}`} value={value} /><span className="text-sm font-bold">{label}</span>
+                </Label>
+              ))}
+            </RadioGroup>
+          </fieldset>
+          {f.format === "group" && <Field id="c-group-size" label="Learners per time slot"><Input id="c-group-size" type="number" min="2" max="100" value={f.groupSize} onChange={(e) => setF({ ...f, groupSize: e.target.value })} /></Field>}
           <Field id="c-duration" label="Session length (minutes)">
             <Input id="c-duration" type="number" min="15" step="5" value={f.duration} onChange={(e) => setF({ ...f, duration: e.target.value })} />
           </Field>

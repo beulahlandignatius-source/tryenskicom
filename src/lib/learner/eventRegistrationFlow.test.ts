@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { blankDraft, draftProblems, registrationTotal } from "./eventRegistration";
 import { findEvent } from "./catalog";
-import { canRegister, registerFree, saveEventDraft, startPaidRegistration, initialLearnerState, type LearnerState } from "./rules";
+import { canRegister, cancelRegistration, registerFree, saveEventDraft, startPaidRegistration, initialLearnerState, type LearnerState } from "./rules";
 
 const free = findEvent("ai-app-workshop")!;
 const paid = findEvent("lagos-creators-meetup")!;
@@ -15,6 +15,9 @@ describe("event registration flow", () => {
     expect(done.registrations).toHaveLength(1);
     const next = { ...withDraft, ...done };
     expect(canRegister(next, free.id)).toEqual({ ok: false, reason: "You're already registered" });
+    const cancelled = { ...next, ...cancelRegistration(next, free.id) };
+    expect(cancelled.registrations[0]?.cancelledAt).toBeTruthy();
+    expect(canRegister(cancelled, free.id)).toEqual({ ok: true });
   });
   it("requires name, email and agreement before details can be saved", () => {
     const problems = draftProblems({ ...blankDraft(state().profile), name: "", email: "nope", agree: false });

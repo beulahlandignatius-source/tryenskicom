@@ -14,7 +14,8 @@ const state = {
     order("done", "svc", { stage: "completed" }),
     order("buy", "course"),
   ],
-};
+  sessionBookings: [{ id: "session-1", itemId: "coach", kind: "coaching", learnerName: "Bola", learnerEmail: "bola@example.com", scheduledAt: "2026-11-15T11:00:00Z", createdAt: "2026-11-10", status: "requested" }],
+} as never;
 
 describe("creator bookings", () => {
   const rows = bookingRows(state, now);
@@ -23,12 +24,16 @@ describe("creator bookings", () => {
   });
   it("a past session still marked scheduled needs an outcome", () => {
     expect(rows.find((r) => r.id === "past")?.label).toBe("Needs outcome");
-    expect(needsAction(rows).map((r) => r.id)).toEqual(["past", "brief"]);
+    expect(needsAction(rows).map((r) => r.id)).toEqual(["past", "brief", "session-1"]);
   });
   it("upcoming sessions are future only, soonest first", () => {
-    expect(upcomingSessions(rows, now).map((r) => r.id)).toEqual(["next", "live-live"]);
+    expect(upcomingSessions(rows, now).map((r) => r.id)).toEqual(["next", "session-1", "live-live"]);
   });
   it("earnings count paid coaching, live and service orders only", () => {
+    expect(facilitationEarnings(rows)).toBe(40000);
+  });
+  it("shows learner-submitted sessions as creator booking requests without inventing revenue", () => {
+    expect(rows.find((row) => row.id === "session-1")).toMatchObject({ who: "Bola", label: "Booking request", amount: 0 });
     expect(facilitationEarnings(rows)).toBe(40000);
   });
 });

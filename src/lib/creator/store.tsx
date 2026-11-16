@@ -60,6 +60,29 @@ export function CreatorProvider({ children }: { children: ReactNode }) {
       setStorageError(true);
     }
   }, [state, ready]);
+  useEffect(() => {
+    if (!ready) return;
+    const storageKey = accountStorageKey(STORAGE_KEY);
+    const refresh = (key: string | null) => {
+      if (key !== storageKey) return;
+      try {
+        const raw = localStorage.getItem(storageKey);
+        if (!raw) return;
+        const parsed = stateSchema.safeParse(JSON.parse(raw));
+        if (parsed.success) setState(withIdentity(parsed.data));
+      } catch {
+        setStorageError(true);
+      }
+    };
+    const onStoreUpdate = (event: Event) => refresh((event as CustomEvent<string>).detail ?? null);
+    const onStorage = (event: StorageEvent) => refresh(event.key);
+    window.addEventListener("enski:creator-store-updated", onStoreUpdate);
+    window.addEventListener("storage", onStorage);
+    return () => {
+      window.removeEventListener("enski:creator-store-updated", onStoreUpdate);
+      window.removeEventListener("storage", onStorage);
+    };
+  }, [ready]);
   const latest = useRef(state);
   latest.current = state;
   const compute = (s: CreatorState, patch: Parameters<Context["update"]>[0]): CreatorState => {

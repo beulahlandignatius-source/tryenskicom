@@ -3,6 +3,7 @@ import type { PaymentRecord } from "@/lib/shop/payments";
 import type { ShopItem } from "@/lib/shop/types";
 import { STORAGE_KEY } from "./data";
 import { stateSchema, type CreatorItem, type CreatorState } from "./rules";
+import { coachingOf, coachingSlots, liveOf } from "./products";
 import { SAMPLE_CREATOR, SAMPLE_HANDLE, sampleItems, samplePage, withSamplePage } from "./sampleStore";
 
 /**
@@ -30,6 +31,19 @@ export type PublicStore = {
   /** True when the creator hasn't made the page visible yet (only reachable as a preview). */
   hidden?: boolean;
 };
+
+export type PublicSessionOffer = {
+  handle: string;
+  owner: string;
+  storeName: string;
+  item: CreatorItem;
+  durationMinutes: number;
+  venue: string;
+  price: number;
+  format: "one_to_one" | "group" | "live";
+};
+
+export type PublicSessionBooking = CreatorState["sessionBookings"][number];
 
 const PAGE_DEFAULT = stateSchema.shape.storePage.parse(undefined);
 
@@ -75,6 +89,120 @@ function readAll(includeHidden = false): PublicStore[] {
     }
   }
   return out;
+}
+
+function readCreatorRecord(handle: string) {
+  if (typeof window === "undefined") return null;
+  for (let i = 0; i < localStorage.length; i += 1) {
+    const key = localStorage.key(i);
+    if (!key?.startsWith(PREFIX)) continue;
+    try {
+      const parsed = stateSchema.safeParse(JSON.parse(localStorage.getItem(key) ?? "null"));
+      if (parsed.success && parsed.data.storefront.handle.toLowerCase() === handle.toLowerCase()) return { key, state: parsed.data };
+    } catch {
+      /* Ignore an unreadable creator record. */
+    }
+  }
+  return null;
+}
+
+const publishCreatorUpdate = (key: string) => window.dispatchEvent(new CustomEvent("enski:creator-store-updated", { detail: key }));
+
+/** Published coaching and live offers from creator storefronts saved on this device. */
+export function creatorSessionOffers(): PublicSessionOffer[] {
+  return readAll().flatMap((store) => store.items
+    .filter((item) => (item.kind === "coaching" || item.kind === "live") && item.status === "published")
+    .map((item) => {
+      const coaching = coachingOf(item);
+      const live = liveOf(item);
+      return {
+        handle: store.handle,
+        owner: store.owner,
+        storeName: store.name,
+        item,
+        durationMinutes: item.kind === "coaching" ? item.duration : live.durationMins,
+        venue: item.kind === "coaching" ? coaching.location : live.venue,
+        price: item.price,
+        format: item.kind === "coaching" ? coaching.format : "live",
+      };
+    }));
+}
+
+/** Available local demo appointments for one creator's coaching offer. */
+export function creatorCoachingSlots(handle: string, itemId: string, now = new Date(), excludeBookingId?: string) {
+  const record = readCreatorRecord(handle);
+  const item = record?.state.items.find((candidate) => candidate.id === itemId && candidate.kind === "coaching" && candidate.status === "published");
+  if (!record || !item) return [];
+  const coaching = coachingOf(item);
+  const booked = record.state.sessionBookings.filter((booking) => booking.itemId === itemId && booking.kind === "coaching" && booking.id !== excludeBookingId && booking.status !== "cancelled").map((booking) => booking.scheduledAt);
+  const slots = coachingSlots(record.state.availability.days, record.state.availability.buffer, item.duration, coaching, booked, now, 30);
+  if (coaching.format === "one_to_one") return slots;
+  return slots.filter((slot) => record.state.sessionBookings.filter((booking) => booking.itemId === itemId && booking.id !== excludeBookingId && booking.scheduledAt === slot && booking.status !== "cancelled").length < coaching.groupSize);
+}
+
+/** Save a learner's simulated reservation to the matching creator account. */
+export function reserveCreatorSession(handle: string, itemId: string, learner: { name: string; email: string }, scheduledAt: string, now = Date.now()): PublicSessionBooking | null {
+  const record = readCreatorRecord(handle);
+  const item = record?.state.items.find((candidate) => candidate.id === itemId);
+  if (!record || !item || item.status !== "published" || (item.kind !== "coaching" && item.kind !== "live") || !learner.name.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(learner.email.trim())) return null;
+  if (Date.parse(scheduledAt) <= now) return null;
+  if (item.kind === "coaching" && !creatorCoachingSlots(handle, itemId, new Date(now)).includes(scheduledAt)) return null;
+  if (item.kind === "live") {
+    if (item.date && Date.parse(item.date) !== Date.parse(scheduledAt)) return null;
+    const occupied = record.state.sessionBookings.filter((booking) => booking.itemId === itemId && booking.status !== "cancelled").length;
+    const sold = record.state.orders.filter((order) => order.itemId === itemId && order.status === "paid").length;
+    if (occupied + sold >= item.capacity) return null;
+  }
+  const booking: PublicSessionBooking = {
+    id: typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `session-${now}`,
+    itemId,
+    kind: item.kind,
+    learnerName: learner.name.trim(),
+    learnerEmail: learner.email.trim().toLowerCase(),
+    scheduledAt,
+    createdAt: new Date(now).toISOString(),
+    status: "requested",
+    itemTitle: item.title,
+    creatorName: record.state.storefront.name || record.state.profile.firstName || "Creator",
+    image: item.image,
+    online: item.kind === "live" ? liveOf(item).venue === "online" : coachingOf(item).location === "video",
+    meetingLink: item.kind === "live" ? liveOf(item).link : coachingOf(item).meetingLink,
+  };
+  const customers = record.state.customers.some((customer) => customer.email.toLowerCase() === booking.learnerEmail)
+    ? record.state.customers
+    : [...record.state.customers, { id: `session-${booking.id}`, name: booking.learnerName, email: booking.learnerEmail, source: "manual" as const, date: booking.createdAt }];
+  try {
+    localStorage.setItem(record.key, JSON.stringify({ ...record.state, customers, sessionBookings: [booking, ...record.state.sessionBookings] }));
+    publishCreatorUpdate(record.key);
+    return booking;
+  } catch {
+    return null;
+  }
+}
+
+/** Keep learner actions and creator management in sync without calling a service. */
+export function updateCreatorSessionBooking(handle: string, id: string, patch: Partial<PublicSessionBooking>): boolean {
+  const record = readCreatorRecord(handle);
+  if (!record || !record.state.sessionBookings.some((booking) => booking.id === id)) return false;
+  try {
+    localStorage.setItem(record.key, JSON.stringify({
+      ...record.state,
+      sessionBookings: record.state.sessionBookings.map((booking) => booking.id === id ? { ...booking, ...patch } : booking),
+    }));
+    publishCreatorUpdate(record.key);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function creatorBookingStatus(handle: string, id: string) {
+  return readCreatorRecord(handle)?.state.sessionBookings.find((booking) => booking.id === id) ?? null;
+}
+
+/** Learner-facing current booking status after a creator confirms, moves or closes it. */
+export function learnerSessionBooking(handle: string, id: string) {
+  return readCreatorRecord(handle)?.state.sessionBookings.find((booking) => booking.id === id) ?? null;
 }
 
 /** The sample creator page: opens in any browser so a storefront link can always be tried. */
