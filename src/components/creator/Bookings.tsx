@@ -10,6 +10,7 @@ import { averageRating } from "@/lib/creator/rules";
 import { naira } from "@/lib/affiliate/products";
 import { cn } from "@/lib/utils";
 import { ItemLink, itemPaths } from "./shared";
+import { SessionRequests } from "./SessionRequests";
 
 const KIND = {
   coaching: { label: "Coaching", icon: UsersRound },
@@ -89,6 +90,8 @@ export function CreatorBookings() {
         <StatCard icon={Wrench} label="Service orders open" value={String(services.filter((s) => s.label !== "Completed").length)} tone="sky" hint={`${services.length} in total`} />
         <StatCard icon={Wallet} label="Earned from sessions" value={naira(facilitationEarnings(rows))} tone="midnight" hint="Coaching, live and services" />
       </div>
+
+      <div className="mb-6"><SessionRequests /></div>
 
       {!offers.length ? (
         <CharmTip

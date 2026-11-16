@@ -8,7 +8,9 @@ import { ConfirmDialog, ConfirmNote } from "@/components/shared/BrandDialog";
 import { Button } from "@/components/dashboard-ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/dashboard-ui/tabs";
 import { learnerBookings, type Booking } from "@/lib/learner/bookings";
+import { cancelCoachingAppointment } from "@/lib/learner/coaching";
 import { cancelRegistration } from "@/lib/learner/rules";
+import { updateCreatorSessionBooking, learnerSessionBooking } from "@/lib/creator/publicStore";
 import { useLearner } from "@/lib/learner/store";
 import { dayIn, timeIn, useViewerTimeZone, zoneLabel } from "@/lib/learner/timezone";
 
@@ -17,6 +19,9 @@ const STATUS = {
   awaiting: { label: "Awaiting schedule", tone: "pending" },
   attended: { label: "Attended", tone: "info" },
   ended: { label: "Ended", tone: "neutral" },
+  cancelled: { label: "Cancelled", tone: "neutral" },
+  requested: { label: "Awaiting creator", tone: "pending" },
+  live: { label: "Live now", tone: "success" },
 } as const;
 
 export function MyBookingsPage() {
@@ -25,8 +30,8 @@ export function MyBookingsPage() {
   const [tab, setTab] = useState<"upcoming" | "past" | "cancelled">("upcoming");
   const [cancel, setCancel] = useState<Booking | null>(null);
   const all = useMemo(() => learnerBookings(state), [state.purchases, state.registrations]);
-  const list = tab === "cancelled" ? [] : all.filter((b) => (tab === "past" ? b.when_past : !b.when_past));
-  const counts = { upcoming: all.filter((b) => !b.when_past).length, past: all.filter((b) => b.when_past).length };
+  const list = tab === "cancelled" ? all.filter((b) => b.status === "cancelled") : all.filter((b) => b.status !== "cancelled" && (tab === "past" ? b.when_past : !b.when_past));
+  const counts = { upcoming: all.filter((b) => !b.when_past && b.status !== "cancelled").length, past: all.filter((b) => b.when_past && b.status !== "cancelled").length, cancelled: all.filter((b) => b.status === "cancelled").length };
 
   return (
     <div className="min-w-0">
@@ -36,7 +41,7 @@ export function MyBookingsPage() {
           <TabsList className="mb-5 w-full justify-start overflow-x-auto sm:w-auto">
             <TabsTrigger value="upcoming">Upcoming ({counts.upcoming})</TabsTrigger>
             <TabsTrigger value="past">Past ({counts.past})</TabsTrigger>
-            <TabsTrigger value="cancelled">Cancelled</TabsTrigger>
+            <TabsTrigger value="cancelled">Cancelled ({counts.cancelled})</TabsTrigger>
           </TabsList>
         </Tabs>
       )}
@@ -58,12 +63,13 @@ export function MyBookingsPage() {
                 </p>
                 <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
                   {b.online ? <Video className="h-3.5 w-3.5 text-cobalt" aria-hidden="true" /> : <MapPin className="h-3.5 w-3.5 text-cobalt" aria-hidden="true" />}
-                  {b.online ? "Meeting link shared on the session page before it starts" : "In person, see session page for the venue"}
+                  {b.online ? b.meetingLink ? "Meeting link available" : "Your creator will share the meeting link" : "In person, see session page for the venue"}
                   {b.reference && <span className="ml-1 truncate">· Ref {b.reference}</span>}
                 </p>
               </div>
               <div className="flex flex-wrap gap-2 sm:flex-col sm:items-stretch">
                 <Button asChild size="sm"><Link {...b.href}>View details</Link></Button>
+                {b.meetingLink && b.status === "confirmed" && b.when && Date.parse(b.when) <= Date.now() + 24 * 60 * 60 * 1000 && <Button asChild size="sm" variant="soft"><a href={b.meetingLink} target="_blank" rel="noreferrer"><Video />Join session</a></Button>}
                 {b.cancellable && <Button size="sm" variant="outline" onClick={() => setCancel(b)}>Cancel</Button>}
               </div>
             </li>
@@ -87,7 +93,15 @@ export function MyBookingsPage() {
         description={cancel ? `Your seat for ${cancel.title} will be released.` : ""}
         confirmLabel="Cancel booking"
         onConfirm={() => {
-          if (cancel) update((s) => cancelRegistration(s, cancel.id.slice(2)));
+            if (cancel) {
+              if (cancel.creatorHandle) {
+                updateCreatorSessionBooking(cancel.creatorHandle, cancel.id, { status: "cancelled" });
+                update((s) => ({ creatorSessionBookings: s.creatorSessionBookings.map((booking) => booking.id === cancel.id ? { ...booking, status: "cancelled" } : booking) }));
+              } else if (cancel.id.startsWith("c-")) {
+                update((s) => cancelCoachingAppointment(s, cancel.id));
+              } else {
+                update((s) => cancelRegistration(s, cancel.id.slice(2)));
+              }
           setCancel(null);
           toast.success("Booking cancelled");
         }}

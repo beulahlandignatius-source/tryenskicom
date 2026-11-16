@@ -31,8 +31,8 @@ export function SessionDetails({ handle, itemId, kind }: { handle: string; itemI
   if (!offer) return <LearnerNotFound what="session" />;
   const location = offer.venue === "in_person" ? "In person" : offer.venue === "phone" ? "Phone" : "Online";
   const scheduledAt = kind === "live" ? liveAt : selectedTime;
-  const statusTone = currentStatus === "confirmed" ? "success" : currentStatus === "requested" ? "pending" : currentStatus === "cancelled" ? "neutral" : "info";
-  const statusLabel = currentStatus === "requested" ? "Awaiting creator" : currentStatus === "confirmed" ? "Confirmed" : currentStatus === "cancelled" ? "Cancelled" : currentStatus ? "Session complete" : "Available";
+  const statusTone = currentStatus === "confirmed" || currentStatus === "live" ? "success" : currentStatus === "requested" ? "pending" : currentStatus === "cancelled" ? "neutral" : "info";
+  const statusLabel = currentStatus === "requested" ? "Awaiting creator" : currentStatus === "confirmed" ? "Confirmed" : currentStatus === "live" ? "Live now" : currentStatus === "cancelled" ? "Cancelled" : currentStatus ? "Session complete" : "Available";
 
   const book = () => {
     setError("");
@@ -96,7 +96,7 @@ export function SessionDetails({ handle, itemId, kind }: { handle: string; itemI
             <div className="space-y-3">
               <p className="text-sm font-bold">{currentStatus === "requested" ? "Your request is with the creator." : "Your place is confirmed."}</p>
               {existing.scheduledAt && <p className="text-sm text-muted-foreground">{dayIn(existing.scheduledAt, timeZone)} · {timeIn(existing.scheduledAt, timeZone)} {zoneLabel(existing.scheduledAt, timeZone)}</p>}
-              {existing.status === "confirmed" && offer.meetingLink && Date.parse(existing.scheduledAt) <= Date.now() + 24 * 60 * 60 * 1000 && <Button asChild className="w-full"><a href={offer.meetingLink} target="_blank" rel="noreferrer"><Video />Open meeting link</a></Button>}
+              {(currentStatus === "confirmed" || currentStatus === "live") && existing.meetingLink && Date.parse(existing.scheduledAt) <= Date.now() + 24 * 60 * 60 * 1000 && <Button asChild className="w-full"><a href={existing.meetingLink} target="_blank" rel="noreferrer"><Video />Open meeting link</a></Button>}
               {(existing.status === "requested" || existing.status === "confirmed") && Date.parse(existing.scheduledAt) > Date.now() && <Button className="w-full" variant="outline" onClick={cancel}>Cancel reservation</Button>}
             </div>
           ) : kind === "coaching" ? (
