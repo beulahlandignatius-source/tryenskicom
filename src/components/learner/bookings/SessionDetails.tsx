@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { CalendarClock, CalendarDays, CheckCircle2, Clock, MapPin, MonitorPlay, UserRound, Video } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/dashboard-ui/button";
 import { Input } from "@/components/dashboard-ui/input";
@@ -15,11 +15,14 @@ export function SessionDetails({ handle, itemId, kind }: { handle: string; itemI
   const navigate = useNavigate();
   const { state, update } = useLearner();
   const timeZone = useViewerTimeZone();
-  const offer = useMemo(() => creatorSessionOffers().find((entry) => entry.handle === handle && entry.item.id === itemId && entry.item.kind === kind), [handle, itemId, kind]);
+  const [offer, setOffer] = useState<ReturnType<typeof creatorSessionOffers>[number] | null>(null);
   const [selectedTime, setSelectedTime] = useState("");
   const [learnerName, setLearnerName] = useState(state.profile.fullName);
   const [learnerEmail, setLearnerEmail] = useState(state.profile.email);
   const [error, setError] = useState("");
+  useEffect(() => {
+    setOffer(creatorSessionOffers().find((entry) => entry.handle === handle && entry.item.id === itemId && entry.item.kind === kind) ?? null);
+  }, [handle, itemId, kind]);
   const existing = state.creatorSessionBookings.find((booking) => booking.creatorHandle === handle && booking.itemId === itemId && booking.status !== "cancelled");
   const slots = offer?.item.kind === "coaching" ? creatorCoachingSlots(handle, itemId) : [];
   const liveAt = offer?.item.kind === "live" ? offer.item.date : "";

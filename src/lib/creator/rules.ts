@@ -150,7 +150,7 @@ const sessionBookingSchema = z.object({
   learnerEmail: z.string().email(),
   scheduledAt: z.string(),
   createdAt: z.string(),
-  status: z.enum(["requested", "confirmed", "cancelled", "completed", "no_show", "attended"]),
+  status: z.enum(["requested", "confirmed", "live", "cancelled", "completed", "no_show", "attended"]),
   itemTitle: z.string().optional(),
   creatorName: z.string().optional(),
   image: z.string().optional(),

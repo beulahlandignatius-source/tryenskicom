@@ -92,6 +92,7 @@ export function bookingRows(s: Pick<CreatorState, "items" | "orders" | "customer
     const labels = {
       requested: { label: "Booking request", tone: "warn" as const, action: "Confirm or decline the request" },
       confirmed: { label: past ? "Needs outcome" : "Confirmed", tone: past ? "warn" as const : "info" as const, action: past ? "Mark attended or no-show" : null },
+      live: { label: "Live now", tone: "success" as const, action: null },
       cancelled: { label: "Cancelled", tone: "muted" as const, action: null },
       completed: { label: "Completed", tone: "success" as const, action: null },
       no_show: { label: "No-show", tone: "muted" as const, action: null },

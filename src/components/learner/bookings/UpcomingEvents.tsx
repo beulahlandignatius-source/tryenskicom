@@ -1,11 +1,12 @@
 import { Link } from "@tanstack/react-router";
 import { Briefcase, CalendarDays, MonitorPlay, UsersRound } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { EmptyState, PageHeader, Panel } from "@/components/affiliate/ui";
 import { Button } from "@/components/dashboard-ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/dashboard-ui/tabs";
 import { naira } from "@/lib/affiliate/products";
 import { upcomingListings, type EventCategory } from "@/lib/learner/bookings";
+import { creatorSessionOffers, type PublicSessionOffer } from "@/lib/creator/publicStore";
 import { EventCard } from "../shared";
 
 const CATS: { id: EventCategory; label: string }[] = [
@@ -20,7 +21,9 @@ const EMPTY = {
 
 export function UpcomingEventsPage() {
   const [cat, setCat] = useState<EventCategory>("all");
-  const list = useMemo(() => upcomingListings(cat), [cat]);
+  const [offers, setOffers] = useState<PublicSessionOffer[]>([]);
+  useEffect(() => { setOffers(creatorSessionOffers()); }, []);
+  const list = useMemo(() => upcomingListings(cat, Date.now(), offers), [cat, offers]);
   const empty = EMPTY[cat];
   return (
     <div className="min-w-0">

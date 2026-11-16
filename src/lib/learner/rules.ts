@@ -20,7 +20,7 @@ export const stateSchema = z.object({
   /** Creator coaching and live-session reservations; kept separate from event tickets and purchases. */
   creatorSessionBookings: z.array(z.object({
     id: z.string(), creatorHandle: z.string(), itemId: z.string(), kind: z.enum(["coaching", "live"]), scheduledAt: z.string(), createdAt: z.string(), itemTitle: z.string().default("Session"), creatorName: z.string().default("Creator"), image: z.string().default(""), online: z.boolean().default(true), meetingLink: z.string().default(""),
-    status: z.enum(["requested", "confirmed", "cancelled", "completed", "no_show", "attended"]),
+    status: z.enum(["requested", "confirmed", "live", "cancelled", "completed", "no_show", "attended"]),
   })).default([]),
   /** Coaching sessions from the published sample catalogue, separate from creator-owned offers. */
   coachingAppointments: z.array(z.object({
