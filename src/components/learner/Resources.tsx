@@ -186,7 +186,7 @@ export function ResourceDetails({ id, view }: { id: string; view?: "quiz" | unde
         </div>
         <aside className="lg:sticky lg:top-24 lg:self-start">
           <div className="surface p-5">
-            {owned ? (
+            {r.type === "Coaching" ? <CoachingBookingPanel resource={r} /> : owned ? (
               <>
                 <StatusBadge tone="success">In your library</StatusBadge>
                 <p className="mt-4 text-sm font-bold">Your progress</p>
@@ -202,7 +202,7 @@ export function ResourceDetails({ id, view }: { id: string; view?: "quiz" | unde
                   <p className="mt-3 flex gap-2 rounded-lg bg-ice p-3 text-xs text-cobalt"><Award className="h-4 w-4 shrink-0" /> Complete every lesson to receive a certificate of completion from {r.creator}.</p>
                 ))}
               </>
-            ) : r.type === "Coaching" ? <CoachingBookingPanel resource={r} /> : (
+            ) : (
               <>
                 <p className="text-2xl font-extrabold tabular-nums">{price(r.price)}</p>
                 <ul className="mt-3 space-y-1.5 text-sm text-muted-foreground">
