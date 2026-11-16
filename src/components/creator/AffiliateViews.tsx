@@ -115,7 +115,7 @@ export function AffiliatesPage() {
   const loadSample = () => {
     const now = Date.now();
     const sample: Affiliate[] = SAMPLE_AFFILIATES.map(([name, email, st, days], i) => ({ id: `sample-aff-${i}`, name, email, status: st, date: new Date(now - days * DAY).toISOString() }));
-    update((s) => ({ ...s, affiliates: [...sample, ...s.affiliates.filter((a) => !a.id.startsWith("sample-aff-"))] }));
+    update((s) => ({ affiliates: [...sample, ...s.affiliates.filter((a) => !a.id.startsWith("sample-aff-"))] }));
     toast.success("Sample affiliates added", { description: "These are examples so you can see how the page works. Remove them any time." });
   };
   return (
