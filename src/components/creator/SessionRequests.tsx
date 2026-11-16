@@ -5,6 +5,7 @@ import { Button } from "@/components/dashboard-ui/button";
 import { FilterSelect, Panel, StatusBadge } from "@/components/affiliate/ui";
 import { useCreator, activityEntry } from "@/lib/creator/store";
 import { coachingOf, coachingSlots } from "@/lib/creator/products";
+import { updateLearnerCreatorSession } from "@/lib/learner/coaching";
 import type { SessionBooking } from "@/lib/creator/rules";
 
 export function SessionRequests() {
@@ -17,6 +18,7 @@ export function SessionRequests() {
       sessionBookings: current.sessionBookings.map((row) => row.id === booking.id ? { ...row, ...next } : row),
       activity: [...current.activity, activityEntry(`${label}: ${booking.itemTitle ?? "Session"} · ${booking.learnerName}`)],
     }));
+    updateLearnerCreatorSession(booking.id, next);
     toast.success(label);
   };
   const slots = moving?.kind === "coaching" ? (() => {

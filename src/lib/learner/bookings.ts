@@ -43,6 +43,7 @@ export type Booking = {
   online: boolean;
   meetingLink?: string;
   creatorHandle?: string;
+  itemId?: string;
 };
 
 /** Bookings come only from the learner's own paid coaching purchases and event registrations. */
@@ -68,7 +69,7 @@ export function learnerBookings(s: Pick<LearnerState, "purchases" | "registratio
   for (const ownedSession of s.creatorSessionBookings) {
     const current = learnerSessionBooking(ownedSession.creatorHandle, ownedSession.id) ?? ownedSession;
     const past = Date.parse(current.scheduledAt) < now;
-    out.push({ id: ownedSession.id, kind: ownedSession.kind, title: ownedSession.itemTitle, host: ownedSession.creatorName, image: ownedSession.image, when: current.scheduledAt, status: current.status === "cancelled" ? "cancelled" : current.status === "live" ? "live" : current.status === "attended" ? "attended" : current.status === "completed" || current.status === "no_show" || past ? "ended" : current.status === "requested" ? "requested" : "confirmed", when_past: past, href: { to: "/learner/session", search: { handle: ownedSession.creatorHandle, itemId: ownedSession.itemId, kind: ownedSession.kind } }, reference: ownedSession.id.slice(0, 8).toUpperCase(), cancellable: (current.status === "requested" || current.status === "confirmed") && !past, online: ownedSession.online, meetingLink: ownedSession.meetingLink, creatorHandle: ownedSession.creatorHandle });
+    out.push({ id: ownedSession.id, kind: ownedSession.kind, title: ownedSession.itemTitle, host: ownedSession.creatorName, image: ownedSession.image, when: current.scheduledAt, status: current.status === "cancelled" ? "cancelled" : current.status === "live" ? "live" : current.status === "attended" ? "attended" : current.status === "completed" || current.status === "no_show" || past ? "ended" : current.status === "requested" ? "requested" : "confirmed", when_past: past, href: { to: "/learner/session", search: { handle: ownedSession.creatorHandle, itemId: ownedSession.itemId, kind: ownedSession.kind } }, reference: ownedSession.id.slice(0, 8).toUpperCase(), cancellable: (current.status === "requested" || current.status === "confirmed") && !past, online: ownedSession.online, meetingLink: ownedSession.meetingLink, creatorHandle: ownedSession.creatorHandle, itemId: ownedSession.itemId });
   }
   for (const reg of s.registrations) {
     const e = findEvent(reg.eventId);
