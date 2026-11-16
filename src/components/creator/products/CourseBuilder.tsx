@@ -227,10 +227,12 @@ function StepBasics({ title, setTitle, summary, setSummary, image, setImage, b, 
       </CreateField>
       <ImageField value={image} onChange={setImage} error={err("cb-image")} />
       <CreateField id="cb-programme" label="Programme" hint="Group this course with a programme. Search or type a new one.">
-        <SearchPick id="cb-programme" value={b.programme} options={programmes} onPick={(v) => patch({ programme: v })} placeholder="Choose a programme" />
+        <SearchPick id="cb-programme" value={b.programme} options={programmes} onPick={(v) => patch({ programme: v })} placeholder="Search or choose a programme" />
+        <QuickAdd label="programme" onAdd={(v) => patch({ programme: v })} />
       </CreateField>
       <CreateField id="cb-skills" label="Skill set" count={`${b.skills.length}/${MAX_SKILLS}`} hint="Up to 5 skills learners will build.">
         <SkillPicker value={b.skills} onChange={(skills) => patch({ skills })} options={skillOptions(b.programme)} />
+        {b.skills.length < MAX_SKILLS && <QuickAdd label="skill" onAdd={(v) => patch({ skills: addSkill(b.skills, v) })} />}
       </CreateField>
       <label className="flex items-start justify-between gap-4 rounded-2xl border border-line bg-soft/50 p-4">
         <span>
@@ -295,7 +297,7 @@ function SearchPick({ id, value, options, onPick, placeholder }: { id: string; v
             <CommandEmpty>No match.</CommandEmpty>
             <CommandGroup>
               {q.trim() && !options.some((o) => o.toLowerCase() === q.trim().toLowerCase()) && (
-                <CommandItem value={`new:${q}`} onSelect={() => { onPick(q.trim()); setOpen(false); setQ(""); }}><Plus className="h-4 w-4" />Use "{q.trim()}"</CommandItem>
+                <CommandItem value={`new:${q}`} onSelect={() => { onPick(q.trim()); setOpen(false); setQ(""); }}><Plus className="h-4 w-4" />Add "{q.trim()}"</CommandItem>
               )}
               {value && <CommandItem value="__clear" onSelect={() => { onPick(""); setOpen(false); }}><X className="h-4 w-4" />No programme</CommandItem>}
               {options.map((o) => (
@@ -308,6 +310,18 @@ function SearchPick({ id, value, options, onPick, placeholder }: { id: string; v
         </Command>
       </PopoverContent>
     </Popover>
+  );
+}
+
+function QuickAdd({ label, onAdd }: { label: string; onAdd: (v: string) => void }) {
+  const [v, setV] = useState("");
+  const submit = () => { const t = v.trim(); if (!t) return; onAdd(t); setV(""); };
+  return (
+    <div className="mt-2 flex gap-2">
+      <input value={v} onChange={(e) => setV(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); submit(); } }}
+        placeholder={`Not listed? Type a new ${label}`} aria-label={`New ${label}`} className="h-10 min-w-0 flex-1 rounded-xl border border-line bg-card px-3 text-sm" />
+      <Button type="button" variant="outline" className="h-10 shrink-0" onClick={submit} disabled={!v.trim()}><Plus />Add</Button>
+    </div>
   );
 }
 
