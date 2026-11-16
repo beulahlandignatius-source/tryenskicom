@@ -1911,3 +1911,10 @@ html[data-splash="off"] .splash {
 @keyframes copy-pop { 0% { transform: scale(1); } 40% { transform: scale(1.05); } 100% { transform: none; } }
 @keyframes copy-check { from { opacity: 0; transform: scale(0.4) rotate(-20deg); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .copy-link-btn[data-copied], .copy-link-btn .copy-check { animation: none; } }
+
+/* Creator Universe: contained, branded page instead of an edge-to-edge takeover. */
+.universe-frame { position:relative; border-radius:calc(var(--radius-card) + 6px); padding:clamp(12px,2.4vw,24px); background:linear-gradient(160deg,color-mix(in oklab,var(--ice) 80%,var(--card)),var(--card) 60%); border:1px solid var(--line); box-shadow:0 24px 60px -36px color-mix(in oklab,var(--cobalt) 45%,transparent); }
+.universe-frame::before { content:""; position:absolute; top:-1px; left:24px; right:24px; height:3px; border-radius:0 0 4px 4px; background:linear-gradient(90deg,var(--cobalt),var(--sky),var(--lime)); }
+.universe-frame > section { margin-top:0 !important; }
+.universe-cta { position:relative; overflow:hidden; border-radius:var(--radius-card); background:radial-gradient(ellipse 80% 120% at 100% 0%,var(--cobalt-glow),var(--midnight) 70%); color:var(--on-dark); }
+.universe-cta::after { content:""; position:absolute; inset:0; background:radial-gradient(circle,color-mix(in oklab,var(--lime) 30%,transparent) 1px,transparent 1.5px) 0 0/16px 16px; -webkit-mask-image:linear-gradient(90deg,transparent 40%,#000); mask-image:linear-gradient(90deg,transparent 40%,#000); pointer-events:none; }
