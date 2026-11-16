@@ -347,6 +347,7 @@ export function coachingSlots(
   booked: string[],
   now: Date,
   limit = 12,
+  maxPerSlot = 1,
 ) {
   const out: string[] = [];
   const step = (durationMins + bufferMins) * 60_000;
@@ -361,7 +362,7 @@ export function coachingSlots(
     const end = new Date(day).setHours(eh ?? 0, em ?? 0, 0, 0);
     for (let t = new Date(day).setHours(sh ?? 0, sm ?? 0, 0, 0); t + durationMins * 60_000 <= end && out.length < limit; t += step) {
       if (t < earliest) continue;
-      if (taken.some((b) => Math.abs(b - t) < step)) continue;
+      if (taken.filter((b) => Math.abs(b - t) < step).length >= maxPerSlot) continue;
       out.push(new Date(t).toISOString());
     }
   }
