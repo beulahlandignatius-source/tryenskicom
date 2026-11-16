@@ -47,7 +47,7 @@ export function StorefrontPage() {
   const saved = state.storefront;
   const published = state.items.filter((i) => i.status === "published");
   const ready = Boolean(saved.name && saved.handle);
-  const text = (f: typeof form) => JSON.stringify([f.name, f.handle, f.tagline, f.about]);
+  const text = (f: typeof form) => JSON.stringify([f.name, f.handle, f.tagline, f.about, f.experienceYears, f.location, f.expertise, f.languages, f.credentials]);
   const dirty = text(form) !== text(saved);
   const kindsLive = KINDS.filter((k) => published.some((i) => i.kind === k));
   const shown = published.filter((i) => (kind === "all" || i.kind === kind) && (i.title + i.category).toLowerCase().includes(q.toLowerCase()));
@@ -56,10 +56,11 @@ export function StorefrontPage() {
   const save = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name.trim()) return setError("Add a store name.");
+    if (form.experienceYears !== null && (form.experienceYears < 0 || form.experienceYears > 60)) return setError("Years of experience should be between 0 and 60.");
     if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(form.handle) || form.handle.length < 3 || form.handle.length > 40)
       return setError("Use a 3–40 character handle with lowercase letters, numbers and hyphens.");
     update((s) => ({
-      storefront: { ...s.storefront, name: form.name.trim(), handle: form.handle, tagline: form.tagline, about: form.about },
+      storefront: { ...s.storefront, name: form.name.trim(), handle: form.handle, tagline: form.tagline, about: form.about, experienceYears: form.experienceYears, location: form.location.trim(), expertise: form.expertise.trim(), languages: form.languages.trim(), credentials: form.credentials.trim() },
       activity: [...s.activity, activityEntry("Storefront details saved")],
     }));
     setError("");
@@ -80,6 +81,24 @@ export function StorefrontPage() {
           </div>
         )}
       />
+
+      {ready ? (
+        <Link to="/creator/storefront/customize" data-surface="dark" className="bg-brand-panel group relative mb-6 flex flex-col gap-4 overflow-hidden rounded-[24px] p-5 text-on-dark shadow-lift sm:flex-row sm:items-center sm:p-6">
+          <span className="hero-dots" aria-hidden="true" />
+          <BrandIcon src={brandArtwork.market} className="relative h-16 w-16 shrink-0 animate-bob" />
+          <span className="relative min-w-0 flex-1">
+            <span className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.14em] text-lime"><span className="neon-dot is-live" aria-hidden="true" />Next step</span>
+            <span className="mt-1 block text-lg font-extrabold sm:text-xl">Customise your storefront page</span>
+            <span className="mt-0.5 block text-[13px] text-on-dark-muted">Choose your colour, write your story, add a welcome video, links, achievements and pick which products show first, with a live preview.</span>
+          </span>
+          <span className="relative inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-lime px-5 text-sm font-extrabold text-midnight transition-transform group-hover:-translate-y-0.5"><PenLine className="h-4 w-4" aria-hidden="true" />Customise page</span>
+        </Link>
+      ) : (
+        <ol className="mb-6 grid gap-2 sm:grid-cols-2">
+          <li className="surface flex items-center gap-3 p-4"><span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-cobalt text-sm font-extrabold text-primary-foreground">1</span><span className="text-sm"><span className="block font-extrabold">Add your store details below</span><span className="text-muted-foreground">Name and link, then tap Save storefront.</span></span></li>
+          <li className="surface flex items-center gap-3 p-4 opacity-70"><span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-soft text-sm font-extrabold text-muted-foreground">2</span><span className="text-sm"><span className="block font-extrabold">Customise your page</span><span className="text-muted-foreground">Unlocks after you save. Colour, story, video and more.</span></span></li>
+        </ol>
+      )}
 
       {/* Live storefront preview */}
       <section className="surface mb-6 overflow-hidden" aria-label="Storefront preview">
@@ -210,6 +229,27 @@ export function StorefrontPage() {
           <div className="sm:col-span-2">
             <Field id="store-about" label="About" hint={`${form.about.length}/800`}>
               <Textarea id="store-about" rows={4} value={form.about} maxLength={800} placeholder="Who you are, who your products are for and what people will get." onChange={(e) => setForm({ ...form, about: e.target.value })} />
+            </Field>
+          </div>
+          <div className="sm:col-span-2 border-t pt-5">
+            <p className="text-sm font-extrabold">Experience and credentials <span className="font-semibold text-muted-foreground">· optional</span></p>
+            <p className="text-[13px] text-muted-foreground">Shown as small tags under your store name so visitors trust you faster.</p>
+          </div>
+          <Field id="store-years" label="Years of experience">
+            <Input id="store-years" type="number" inputMode="numeric" min={0} max={60} value={form.experienceYears ?? ""} placeholder="e.g. 5" onChange={(e) => setForm({ ...form, experienceYears: e.target.value === "" ? null : Math.max(0, Math.min(60, Math.round(Number(e.target.value)))) })} />
+          </Field>
+          <Field id="store-expertise" label="Area of expertise">
+            <Input id="store-expertise" value={form.expertise} maxLength={60} placeholder="e.g. Brand design" onChange={(e) => setForm({ ...form, expertise: e.target.value })} />
+          </Field>
+          <Field id="store-location" label="Location">
+            <Input id="store-location" value={form.location} maxLength={60} placeholder="e.g. Lagos, Nigeria" onChange={(e) => setForm({ ...form, location: e.target.value })} />
+          </Field>
+          <Field id="store-languages" label="Languages">
+            <Input id="store-languages" value={form.languages} maxLength={60} placeholder="e.g. English, Yoruba" onChange={(e) => setForm({ ...form, languages: e.target.value })} />
+          </Field>
+          <div className="sm:col-span-2">
+            <Field id="store-credentials" label="Certifications or highlights">
+              <Input id="store-credentials" value={form.credentials} maxLength={80} placeholder="e.g. Google UX certified" onChange={(e) => setForm({ ...form, credentials: e.target.value })} />
             </Field>
           </div>
           {error && <p role="alert" className="text-sm font-semibold text-destructive sm:col-span-2">{error}</p>}

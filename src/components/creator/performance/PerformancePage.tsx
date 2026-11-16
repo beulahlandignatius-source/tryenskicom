@@ -49,7 +49,7 @@ function Metric({ art, label, value, lines, featured }: { art: string; label: st
   );
 }
 
-const KIND_COLORS = ["var(--cobalt)", "var(--sky)", "var(--lime-press)", "var(--warning)", "var(--midnight)"];
+const KIND_COLORS = ["var(--cobalt)", "var(--lime-press)", "var(--chart-orange)", "var(--chart-red)", "var(--sky)"];
 
 /** Premium donut: share of revenue per product type, total in the centre. */
 function KindDonut({ data, centre, fmt }: { data: { name: string; value: number }[]; centre: string; fmt: (v: number) => string }) {

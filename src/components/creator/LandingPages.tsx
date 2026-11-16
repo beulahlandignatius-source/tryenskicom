@@ -18,6 +18,7 @@ import { useCreator, activityEntry } from "@/lib/creator/store";
 import { isEmail, type LandingPage } from "@/lib/creator/rules";
 import { CreatorNotFound, ItemStatus, copyText, downloadCsv, shortDate } from "./shared";
 import { LandingBuilder } from "./landing/Builder";
+import { ClassicEditor } from "./landing/ClassicEditor";
 import { PagePreview } from "./landing/PagePreview";
 import { conversionRate, pageUrl, templateName } from "@/lib/creator/landing";
 function PageThumb({ page, className }: { page: LandingPage; className?: string | undefined }) {
@@ -155,6 +156,11 @@ export function LandingPagesList() {
       {!state.landingPages.length && (
         <section className="surface overflow-hidden">
           <EmptyState icon={ShoppingBag} title="No landing pages yet" description="Build from a template or import an AI-designed page, then publish in minutes." action={create} />
+          <div className="mx-auto grid max-w-2xl grid-cols-3 gap-3 px-5 pb-10">
+            {([["spotlight", "Spotlight"], ["split", "Split"], ["minimal", "Minimal"]] as const).map(([t, n]) => (
+              <div key={t} className="text-center"><TemplateThumb id={t} className="aspect-[4/3] w-full" /><p className="mt-2 text-xs font-extrabold">{n}</p></div>
+            ))}
+          </div>
         </section>
       )}
     </div>
@@ -234,7 +240,8 @@ function LandingPreview({ page, product, store, device }: { page: LandingPage; p
 export function LandingPageEditor({ id }: { id?: string }) {
   const { state } = useCreator();
   const products = state.items.filter((i) => i.status !== "archived");
-  return <LandingBuilder id={id} legacyPreview={(page, device) => <LandingPreview page={page} product={products.find((i) => i.id === page.itemId)} store={state.storefront.name || "Your store"} device={device} />} />;
+  const preview = (page: LandingPage, device: "desktop" | "mobile") => <LandingPreview page={page} product={products.find((i) => i.id === page.itemId)} store={state.storefront.name || "Your store"} device={device} />;
+  return <LandingBuilder id={id} legacyPreview={preview} classic={(pid) => <ClassicEditor id={pid} preview={preview} thumb={(t, cover) => <TemplateThumb id={t} cover={cover} className="h-full w-full" />} />} />;
 }
 export function LandingLeads({ id }: { id: string }) {
   const { state, update } = useCreator();

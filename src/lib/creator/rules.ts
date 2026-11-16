@@ -305,8 +305,14 @@ export const stateSchema = z.object({
       bannerWords: z
         .object({ headline: z.string(), subline: z.string(), style: z.enum(["cobalt", "midnight", "ice"]) })
         .default({ headline: "", subline: "", style: "cobalt" }),
+      /** Optional credibility details shown under the store name. */
+      experienceYears: z.number().int().min(0).max(60).nullable().default(null),
+      location: z.string().default(""),
+      expertise: z.string().default(""),
+      languages: z.string().default(""),
+      credentials: z.string().default(""),
     })
-    .default({ name: "", handle: "", tagline: "", about: "", published: false, banner: "", bannerSource: "none", bannerWords: { headline: "", subline: "", style: "cobalt" } }),
+    .default({ name: "", handle: "", tagline: "", about: "", published: false, banner: "", bannerSource: "none", bannerWords: { headline: "", subline: "", style: "cobalt" }, experienceYears: null, location: "", expertise: "", languages: "", credentials: "" }),
   /** Public profile page extras (accent, socials, achievements, featured pick, product order). */
   storePage: z
     .object({

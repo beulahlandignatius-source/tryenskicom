@@ -27,7 +27,8 @@ import {
 import { downloadCsv } from "../shared";
 import { cn } from "@/lib/utils";
 
-const COLORS: Record<Channel, string> = { dreamverse: "var(--cobalt)", self: "var(--sky)", offline: "var(--lime-press)" };
+/** Three clearly different colours so channels never get confused: blue, orange, lemon. */
+const COLORS: Record<Channel, string> = { dreamverse: "var(--cobalt)", self: "var(--chart-orange)", offline: "var(--lime-press)" };
 const ART: Record<Channel, string> = { dreamverse: brandArtwork.market, self: brandArtwork.megaphone, offline: brandArtwork.people };
 const ICONS: Record<Channel, typeof Compass> = { dreamverse: Compass, self: Megaphone, offline: Store };
 const HINT: Record<Channel, string> = {
@@ -202,7 +203,7 @@ export function DreamersPage() {
               <div key={c} className={cn(i === 2 && "col-span-2 lg:col-span-1 xl:col-span-2")}>
                 <MetricCard art={ART[c]} label={metric === "money" ? (c === "offline" ? "Offline enrolments" : `Revenue · ${channelLabel[c]}`) : channelLabel[c]}
                   value={metric === "money" && c === "offline" ? `${total(dreamers, "people", range, c)} · no payment` : fmt(metric, total(dreamers, metric, range, c))} hint={HINT[c]}
-                  tone={c === "offline" ? "bg-lime text-midnight" : c === "self" ? "bg-ice text-sky-text" : "bg-ice text-cobalt"}>
+                  tone={c === "offline" ? "bg-lime text-midnight" : c === "self" ? "bg-ice text-ink" : "bg-ice text-cobalt"}>
                   <Spark data={metric === "money" && c === "offline" ? series(dreamers, "people", range) as never : points as never} k={c} color={COLORS[c]} id={`sp-${c}`} />
                 </MetricCard>
               </div>
@@ -248,7 +249,7 @@ export function DreamersPage() {
                   <YAxis width={metric === "money" ? 48 : 28} allowDecimals={false} tick={{ fill: "var(--muted-foreground)", fontSize: 11 }} tickLine={false} axisLine={false} tickFormatter={(v) => (metric === "money" ? compact(Number(v)) : String(v))} />
                   <ChartTip contentStyle={tipStyle} formatter={(v, n) => [fmt(metric, Number(v)), channelLabel[n as Channel] ?? n]} />
                   {CHANNELS.filter((c) => !hidden.includes(c)).map((c) => (
-                    <Line key={c} type="monotone" dataKey={c} name={c} stroke={COLORS[c]} strokeWidth={2.5} dot={false} activeDot={{ r: 5 }} />
+                    <Line key={c} type="monotone" dataKey={c} name={c} stroke={COLORS[c]} strokeWidth={3} strokeLinecap="round" dot={false} activeDot={{ r: 6, strokeWidth: 3, stroke: "var(--card)" }} />
                   ))}
                 </LineChart>
               </ResponsiveContainer>
@@ -323,7 +324,7 @@ function ChannelDonut({ data, fmt: f }: { data: { c: Channel; value: number }[];
 
 function ChannelBadge({ c }: { c: Channel }) {
   const Icon = ICONS[c];
-  return <span className={cn("inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold", c === "offline" ? "bg-lime-100 text-lime-text" : c === "self" ? "bg-ice text-sky-text" : "bg-ice text-cobalt")}><Icon className="h-3 w-3" />{channelLabel[c]}</span>;
+  return <span className={cn("inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold", c === "offline" ? "bg-lime-100 text-lime-text" : c === "self" ? "bg-[color-mix(in_oklab,var(--chart-orange)_16%,transparent)] text-ink" : "bg-ice text-cobalt")}><Icon className="h-3 w-3" />{channelLabel[c]}</span>;
 }
 function DreamerCard({ d, onView, onActivate }: { d: Dreamer; onView: () => void; onActivate: () => void }) {
   const n = d.purchases.length;

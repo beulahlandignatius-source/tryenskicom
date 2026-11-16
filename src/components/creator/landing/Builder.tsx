@@ -44,12 +44,13 @@ function useSave(found: LandingPage | undefined) {
   };
 }
 
-export function LandingBuilder({ id, legacyPreview }: { id?: string | undefined; legacyPreview: LegacyPreview }) {
+export function LandingBuilder({ id, legacyPreview, classic }: { id?: string | undefined; legacyPreview: LegacyPreview; classic?: ((id: string | undefined) => ReactNode) | undefined }) {
   const { state } = useCreator();
   const found = state.landingPages.find((p) => p.id === id);
-  const [mode, setMode] = useState<LandingPage["mode"] | null>(found ? found.mode : null);
+  const [mode, setMode] = useState<LandingPage["mode"] | "classic" | null>(found ? (found.mode === "template" && LEGACY.has(found.template) && classic ? "classic" : found.mode) : null);
   if (id && !found) return <CreatorNotFound what="landingPage" />;
-  if (!mode) return <BuildChoice onPick={setMode} />;
+  if (!mode) return <BuildChoice onPick={setMode} classic={Boolean(classic)} />;
+  if (mode === "classic" && classic) return <>{classic(found?.id)}</>;
   return mode === "import" ? <ImportEditor found={found} /> : <TemplateBuilder found={found} legacyPreview={legacyPreview} />;
 }
 
@@ -57,13 +58,27 @@ function Eyebrow({ children }: { children: ReactNode }) {
   return <p className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-lime-text"><span className="neon-dot" aria-hidden="true" />{children}</p>;
 }
 
-function BuildChoice({ onPick }: { onPick: (m: LandingPage["mode"]) => void }) {
+function BuildChoice({ onPick, classic }: { onPick: (m: LandingPage["mode"] | "classic") => void; classic: boolean }) {
   return (
     <div>
       <Eyebrow>Landing page builder</Eyebrow>
       <h1 className="text-2xl sm:text-[28px]">How do you want to build it?</h1>
-      <p className="mt-1 text-sm text-muted-foreground">Both options give you a page you can save as a draft and publish.</p>
-      <div className="mt-6 grid gap-4 md:grid-cols-2">
+      <p className="mt-1 text-sm text-muted-foreground">Every option gives you a page you can save as a draft and publish.</p>
+      {classic && (
+        <button type="button" onClick={() => onPick("classic")} className="surface mt-6 flex w-full flex-col overflow-hidden text-left transition-all hover:-translate-y-0.5 hover:border-cobalt hover:shadow-lift focus-visible:ring-2 focus-visible:ring-cobalt sm:flex-row">
+          <div data-surface="dark" className="bg-brand-panel grid shrink-0 grid-cols-3 gap-2 p-4 sm:w-72">
+            {["Spotlight", "Split", "Minimal"].map((n, i) => (
+              <div key={n} className="flex aspect-[3/4] flex-col gap-1 rounded-[10px] bg-card p-1.5">
+                {i === 0 && <><span className="h-1/2 rounded-md bg-cobalt" /><span className="mx-auto h-1.5 w-2/3 rounded-full bg-lime" /></>}
+                {i === 1 && <div className="grid h-full grid-cols-2 gap-1"><div className="flex flex-col justify-center gap-1"><span className="h-1 rounded-full bg-midnight/70" /><span className="h-1 w-2/3 rounded-full bg-line" /><span className="h-1.5 w-full rounded-full bg-cobalt" /></div><span className="rounded-md bg-cobalt" /></div>}
+                {i === 2 && <><span className="h-1 w-1/3 rounded-full bg-lime" /><span className="h-1.5 rounded-full bg-midnight/70" /><span className="h-1 rounded-full bg-line" /><span className="mt-auto h-1.5 w-1/2 rounded-full bg-cobalt" /></>}
+              </div>
+            ))}
+          </div>
+          <div className="p-5"><p className="flex items-center gap-2 text-lg font-extrabold"><Sparkles className="h-5 w-5 text-cobalt" />Enski special</p><p className="mt-1 text-sm text-muted-foreground">The original Enski builder: pick Spotlight, Split or Minimal, then edit design, content, sections and settings in four simple tabs.</p></div>
+        </button>
+      )}
+      <div className="mt-4 grid gap-4 md:grid-cols-2">
         <button type="button" onClick={() => onPick("template")} className="surface group overflow-hidden text-left transition-all hover:-translate-y-0.5 hover:border-cobalt hover:shadow-lift focus-visible:ring-2 focus-visible:ring-cobalt">
           <div className="grid grid-cols-4 gap-2 bg-soft p-4">
             {LANDING_TEMPLATE_INFO.filter((t) => !t.legacy).map((t) => (
