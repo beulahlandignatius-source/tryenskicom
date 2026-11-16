@@ -54,7 +54,7 @@ export function LandingBuilder({ id, legacyPreview }: { id?: string | undefined;
 }
 
 function Eyebrow({ children }: { children: ReactNode }) {
-  return <p className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-lime-text"><span className="neon-dot h-1.5 w-1.5 rounded-sm bg-lime" aria-hidden="true" />{children}</p>;
+  return <p className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-lime-text"><span className="neon-dot" aria-hidden="true" />{children}</p>;
 }
 
 function BuildChoice({ onPick }: { onPick: (m: LandingPage["mode"]) => void }) {
@@ -115,7 +115,7 @@ function ImportEditor({ found }: { found: LandingPage | undefined }) {
   const [error, setError] = useState("");
   const [device, setDevice] = useState<Device>("desktop");
   const url = pageUrl(state.storefront.handle, form.slug || "page");
-  const onFile = async (file?: File) => { if (file) setForm((f) => ({ ...f, importHtml: "" })), setForm((f) => f), file.text().then((t) => setForm((f) => ({ ...f, importHtml: t.slice(0, 300_000) }))); };
+  const onFile = (file?: File) => { if (file) void file.text().then((t) => setForm((f) => ({ ...f, importHtml: t.slice(0, 300_000) }))).catch(() => setError("We couldn't read that file. Try pasting the code instead.")); };
   return (
     <div>
       <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center">
