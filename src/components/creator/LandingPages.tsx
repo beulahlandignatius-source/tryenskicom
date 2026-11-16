@@ -242,9 +242,17 @@ export function LandingLeads({ id }: { id: string }) {
   const [add, setAdd] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [whatsapp, setWhatsapp] = useState("");
   const [error, setError] = useState("");
+  const [q, setQ] = useState("");
+  const [range, setRange] = useState("all");
   if (!page) return <CreatorNotFound what="landingPage" />;
   const leads = state.leads.filter((l) => l.pageId === id).slice().reverse();
+  const needle = q.trim().toLowerCase();
+  const cutoff = range === "all" ? 0 : Date.now() - Number(range) * 864e5;
+  const shown = leads.filter((l) => new Date(l.date).getTime() >= cutoff && (!needle || [l.name, l.email, l.phone ?? "", l.whatsapp ?? "", ...(l.answers ?? []).map((a) => a.answer)].some((t) => t.toLowerCase().includes(needle))));
+  const questions = [...new Set(leads.flatMap((l) => (l.answers ?? []).map((a) => a.question)))];
   const url = pageUrl(state.storefront.handle, page.slug);
   return (
     <div>
@@ -261,7 +269,7 @@ export function LandingLeads({ id }: { id: string }) {
             <Button
               variant="outline"
               disabled={!leads.length}
-              onClick={() => downloadCsv(`${page.slug}-leads.csv`, [["Name", "Email", "Date"], ...leads.map((l) => [l.name, l.email, shortDate(l.date)])])}
+              onClick={() => downloadCsv(`${page.slug}-leads.csv`, [["Name", "Email", "Phone", "WhatsApp", ...questions, "Source", "Date"], ...leads.map((l) => [l.name, l.email, l.phone ?? "", l.whatsapp ?? "", ...questions.map((qq) => l.answers?.find((a) => a.question === qq)?.answer ?? ""), l.source ?? page.title, shortDate(l.date)])])}
             >
               <Download />
               Export CSV
@@ -290,32 +298,49 @@ export function LandingLeads({ id }: { id: string }) {
           )
         }
       >
+        <p className="mb-3 text-[13px] text-muted-foreground">Leads are sign-ups, not purchases. Sales show in your orders.</p>
+        {leads.length > 0 && (
+          <div className="mb-3 flex flex-col gap-2 sm:flex-row">
+            <div className="relative flex-1"><Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" /><Input type="search" aria-label="Search leads" placeholder="Search name, email, phone or answer" value={q} onChange={(e) => setQ(e.target.value)} className="pl-10" /></div>
+            <FilterSelect label="Submitted" value={range} onChange={setRange} options={[["all", "Any time"], ["7", "Last 7 days"], ["30", "Last 30 days"]]} />
+          </div>
+        )}
         <div className="divide-y">
-          {leads.map((l) => (
-            <div key={l.id} className="flex flex-wrap justify-between gap-3 py-4 text-sm">
-              <div className="min-w-0">
-                <p className="font-bold">{l.name}</p>
-                <p className="mt-1 break-all text-xs text-muted-foreground">{l.email}</p>
+          {shown.map((l) => (
+            <div key={l.id} className="py-4 text-sm">
+              <div className="flex flex-wrap justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="font-bold">{l.name}</p>
+                  <p className="mt-1 break-all text-xs text-muted-foreground">{l.email}</p>
+                  {(l.phone || l.whatsapp) && <p className="mt-1 text-xs text-muted-foreground">{l.phone && <>Phone {l.phone}</>}{l.phone && l.whatsapp && " · "}{l.whatsapp && <>WhatsApp {l.whatsapp}</>}</p>}
+                  <p className="mt-1 text-[11px] font-bold text-sky-text">From {l.source || page.title}</p>
+                </div>
+                <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                  {shortDate(l.date)}
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-9 w-9 text-muted-foreground hover:text-destructive"
+                    aria-label={`Remove lead ${l.name}`}
+                    onClick={() => {
+                      const { removed } = removeWhere(state.leads, (x) => x.id === l.id);
+                      update((s) => ({ leads: s.leads.filter((x) => x.id !== l.id) }));
+                      if (removed) undoToast(`${l.name} removed from leads`, () => update((s) => ({ leads: restoreAt(s.leads, removed, sameId) })));
+                    }}
+                  >
+                    <Trash2 />
+                  </Button>
+                </span>
               </div>
-              <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                {shortDate(l.date)}
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="h-9 w-9 text-muted-foreground hover:text-destructive"
-                  aria-label={`Remove lead ${l.name}`}
-                  onClick={() => {
-                    const { removed } = removeWhere(state.leads, (x) => x.id === l.id);
-                    update((s) => ({ leads: s.leads.filter((x) => x.id !== l.id) }));
-                    if (removed) undoToast(`${l.name} removed from leads`, () => update((s) => ({ leads: restoreAt(s.leads, removed, sameId) })));
-                  }}
-                >
-                  <Trash2 />
-                </Button>
-              </span>
+              {!!l.answers?.length && (
+                <details className="mt-2 rounded-[12px] bg-soft px-3 py-2"><summary className="cursor-pointer text-xs font-extrabold text-cobalt">{l.answers.length} answer{l.answers.length === 1 ? "" : "s"}</summary>
+                  <dl className="mt-2 space-y-1.5 text-xs">{l.answers.map((a) => <div key={a.question}><dt className="font-bold">{a.question}</dt><dd className="text-muted-foreground">{a.answer || "—"}</dd></div>)}</dl>
+                </details>
+              )}
             </div>
           ))}
         </div>
+        {leads.length > 0 && !shown.length && <EmptyState icon={Search} title="No leads match" description="Try another word or time range." compact />}
         {!leads.length && <EmptyState icon={Users} title="No leads yet" description="People who sign up on this page will appear here." compact />}
       </Panel>
       <Dialog open={add} onOpenChange={setAdd}>
@@ -332,12 +357,14 @@ export function LandingLeads({ id }: { id: string }) {
               if (!name.trim() || !isEmail(email)) return setError("Enter a name and a valid email.");
               if (leads.some((l) => l.email.toLowerCase() === email.trim().toLowerCase())) return setError("This email already signed up.");
               update((s) => ({
-                leads: [...s.leads, { id: crypto.randomUUID(), pageId: id, name: name.trim(), email: email.trim(), date: new Date().toISOString() }],
+                leads: [...s.leads, { id: crypto.randomUUID(), pageId: id, name: name.trim(), email: email.trim(), date: new Date().toISOString(), ...(phone.trim() ? { phone: phone.trim() } : {}), ...(whatsapp.trim() ? { whatsapp: whatsapp.trim() } : {}), source: "Added by you" }],
                 activity: [...s.activity, activityEntry(`New lead on ${page.title}`)],
               }));
               setAdd(false);
               setName("");
               setEmail("");
+              setPhone("");
+              setWhatsapp("");
               toast.success("Lead added");
             }}
           >
@@ -347,6 +374,8 @@ export function LandingLeads({ id }: { id: string }) {
             <Field id="lead-email" label="Email">
               <Input id="lead-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
             </Field>
+            {page.form.phone && <Field id="lead-phone" label="Phone (optional)"><Input id="lead-phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} /></Field>}
+            {page.form.whatsapp && <Field id="lead-wa" label="WhatsApp (optional)"><Input id="lead-wa" type="tel" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} /></Field>}
             {error && (
               <p role="alert" className="text-sm text-destructive">
                 {error}
