@@ -24,6 +24,7 @@ import { kindInfo } from "@/lib/creator/data";
 import { naira } from "@/lib/affiliate/products";
 import { cn } from "@/lib/utils";
 import { itemPaths, shortDate } from "./shared";
+import { ShareDonut } from "@/components/shared/charts/DashCharts";
 import { SalesChart } from "./Analytics";
 import { OrderRows } from "./Commerce";
 import { kindIcon } from "./Items";
@@ -220,6 +221,14 @@ export function CreatorDashboard() {
             }
           >
             <SalesChart orders={state.orders} />
+          </Panel>
+          <Panel title="Sales by product type" description="Paid orders split by what you sell">
+            {(() => {
+              const paid = state.orders.filter((o) => o.status === "paid");
+              const m = new Map<string, number>();
+              for (const o of paid) { const k = state.items.find((i) => i.id === o.itemId)?.kind; const label = k ? kindInfo[k].label : "Other"; m.set(label, (m.get(label) ?? 0) + 1); }
+              return <ShareDonut data={[...m].map(([label, value]) => ({ label, value }))} center={String(paid.length)} centerLabel={paid.length === 1 ? "sale" : "sales"} empty="Your first sale will show the split here." />;
+            })()}
           </Panel>
           <Panel
             title="Recent orders"
