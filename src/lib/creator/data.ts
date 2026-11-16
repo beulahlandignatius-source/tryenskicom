@@ -28,6 +28,7 @@ export const initialCreatorState: CreatorState = {
   media: [],
   affiliates: [],
   rules: [],
+  categoryRates: {},
   programs: [],
   landingPages: [],
   leads: [],
