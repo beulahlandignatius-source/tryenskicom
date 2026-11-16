@@ -10,7 +10,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/dashboard-ui/tabs";
 import { learnerBookings, type Booking } from "@/lib/learner/bookings";
 import { cancelCoachingAppointment } from "@/lib/learner/coaching";
 import { cancelRegistration } from "@/lib/learner/rules";
-import { updateCreatorSessionBooking, learnerSessionBooking } from "@/lib/creator/publicStore";
+import { updateCreatorSessionBooking } from "@/lib/creator/publicStore";
 import { useLearner } from "@/lib/learner/store";
 import { dayIn, timeIn, useViewerTimeZone, zoneLabel } from "@/lib/learner/timezone";
 
@@ -29,7 +29,7 @@ export function MyBookingsPage() {
   const tz = useViewerTimeZone();
   const [tab, setTab] = useState<"upcoming" | "past" | "cancelled">("upcoming");
   const [cancel, setCancel] = useState<Booking | null>(null);
-  const all = useMemo(() => learnerBookings(state), [state.purchases, state.registrations]);
+  const all = useMemo(() => learnerBookings(state), [state.purchases, state.registrations, state.coachingAppointments, state.creatorSessionBookings]);
   const list = tab === "cancelled" ? all.filter((b) => b.status === "cancelled") : all.filter((b) => b.status !== "cancelled" && (tab === "past" ? b.when_past : !b.when_past));
   const counts = { upcoming: all.filter((b) => !b.when_past && b.status !== "cancelled").length, past: all.filter((b) => b.when_past && b.status !== "cancelled").length, cancelled: all.filter((b) => b.status === "cancelled").length };
 
@@ -69,7 +69,8 @@ export function MyBookingsPage() {
               </div>
               <div className="flex flex-wrap gap-2 sm:flex-col sm:items-stretch">
                 <Button asChild size="sm"><Link {...b.href}>View details</Link></Button>
-                {b.meetingLink && b.status === "confirmed" && b.when && Date.parse(b.when) <= Date.now() + 24 * 60 * 60 * 1000 && <Button asChild size="sm" variant="soft"><a href={b.meetingLink} target="_blank" rel="noreferrer"><Video />Join session</a></Button>}
+                {b.meetingLink && (b.status === "confirmed" || b.status === "live") && b.when && Date.parse(b.when) <= Date.now() + 24 * 60 * 60 * 1000 && <Button asChild size="sm" variant="soft"><a href={b.meetingLink} target="_blank" rel="noreferrer"><Video />Join session</a></Button>}
+                {b.cancellable && b.itemId && <Button asChild size="sm" variant="outline"><Link {...b.href}>Reschedule</Link></Button>}
                 {b.cancellable && <Button size="sm" variant="outline" onClick={() => setCancel(b)}>Cancel</Button>}
               </div>
             </li>
@@ -95,9 +96,14 @@ export function MyBookingsPage() {
         onConfirm={() => {
             if (cancel) {
               if (cancel.creatorHandle) {
-                updateCreatorSessionBooking(cancel.creatorHandle, cancel.id, { status: "cancelled" });
+                const updated = updateCreatorSessionBooking(cancel.creatorHandle, cancel.id, { status: "cancelled" });
+                if (!updated) {
+                  toast.error("This booking couldn't be updated", { description: "Open the session again and try once more." });
+                  setCancel(null);
+                  return;
+                }
                 update((s) => ({ creatorSessionBookings: s.creatorSessionBookings.map((booking) => booking.id === cancel.id ? { ...booking, status: "cancelled" } : booking) }));
-              } else if (cancel.id.startsWith("c-")) {
+              } else if (cancel.itemId) {
                 update((s) => cancelCoachingAppointment(s, cancel.id));
               } else {
                 update((s) => cancelRegistration(s, cancel.id.slice(2)));

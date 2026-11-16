@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { learnerBookings, upcomingListings } from "./bookings";
-import { events } from "./catalog";
+import { events, resources } from "./catalog";
 import { cancelCoachingAppointment, coachingSlots, createCoachingAppointment } from "./coaching";
 import { initialLearnerState } from "./rules";
 
@@ -17,7 +17,7 @@ describe("learner bookings", () => {
     expect(upcomingListings("gigs")).toEqual([]);
   });
   it("creates and cancels simulated catalogue coaching appointments", () => {
-    const coaching = (await import("./catalog")).resources.find((resource) => resource.type === "Coaching");
+    const coaching = resources.find((resource) => resource.type === "Coaching");
     expect(coaching).toBeDefined();
     if (!coaching) return;
     const slot = coachingSlots([], coaching.id, new Date("2026-11-16T09:00:00")).at(0)?.iso;

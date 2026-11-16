@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { CalendarClock, CalendarDays, CheckCircle2, Clock, MapPin, MonitorPlay, UserRound, Video } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/dashboard-ui/button";
 import { Input } from "@/components/dashboard-ui/input";
@@ -17,6 +17,7 @@ export function SessionDetails({ handle, itemId, kind }: { handle: string; itemI
   const timeZone = useViewerTimeZone();
   const [offer, setOffer] = useState<ReturnType<typeof creatorSessionOffers>[number] | null>(null);
   const [selectedTime, setSelectedTime] = useState("");
+  const [rescheduling, setRescheduling] = useState(false);
   const [learnerName, setLearnerName] = useState(state.profile.fullName);
   const [learnerEmail, setLearnerEmail] = useState(state.profile.email);
   const [error, setError] = useState("");
@@ -71,6 +72,18 @@ export function SessionDetails({ handle, itemId, kind }: { handle: string; itemI
     update((s) => ({ creatorSessionBookings: s.creatorSessionBookings.map((booking) => booking.id === existing.id ? { ...booking, status: "cancelled" } : booking) }));
     toast.success("Booking cancelled");
   };
+  const reschedule = () => {
+    if (!existing || !selectedTime) return;
+    const patch = { scheduledAt: selectedTime };
+    if (!updateCreatorSessionBooking(handle, existing.id, patch) || !updateLearnerCreatorSession(existing.id, patch)) {
+      setError("Your new time couldn't be saved. Please try again.");
+      return;
+    }
+    update((s) => ({ creatorSessionBookings: s.creatorSessionBookings.map((booking) => booking.id === existing.id ? { ...booking, ...patch } : booking) }));
+    setRescheduling(false);
+    setSelectedTime("");
+    toast.success("Session time updated");
+  };
 
   return (
     <div className="min-w-0">
@@ -97,7 +110,11 @@ export function SessionDetails({ handle, itemId, kind }: { handle: string; itemI
               <p className="text-sm font-bold">{currentStatus === "requested" ? "Your request is with the creator." : "Your place is confirmed."}</p>
               {existing.scheduledAt && <p className="text-sm text-muted-foreground">{dayIn(existing.scheduledAt, timeZone)} · {timeIn(existing.scheduledAt, timeZone)} {zoneLabel(existing.scheduledAt, timeZone)}</p>}
               {(currentStatus === "confirmed" || currentStatus === "live") && existing.meetingLink && Date.parse(existing.scheduledAt) <= Date.now() + 24 * 60 * 60 * 1000 && <Button asChild className="w-full"><a href={existing.meetingLink} target="_blank" rel="noreferrer"><Video />Open meeting link</a></Button>}
-              {(existing.status === "requested" || existing.status === "confirmed") && Date.parse(existing.scheduledAt) > Date.now() && <Button className="w-full" variant="outline" onClick={cancel}>Cancel reservation</Button>}
+              {(existing.status === "requested" || existing.status === "confirmed") && Date.parse(existing.scheduledAt) > Date.now() && <>
+                {kind === "coaching" && <Button className="w-full" variant="outline" onClick={() => { setRescheduling(!rescheduling); setError(""); }}><CalendarClock />{rescheduling ? "Keep current time" : "Reschedule"}</Button>}
+                {rescheduling && <div className="space-y-2"><FilterSelect label="New session time" value={selectedTime || "none"} onChange={(value) => setSelectedTime(value === "none" ? "" : value)} className="w-full sm:w-full" options={[["none", "Choose a time"], ...slots.filter((slot) => slot !== existing.scheduledAt).map((slot) => [slot, `${dayIn(slot, timeZone)} · ${timeIn(slot, timeZone)}`] as [string, string])]} /><Button className="w-full" disabled={!selectedTime} onClick={reschedule}>Save new time</Button></div>}
+                <Button className="w-full" variant="ghost" onClick={cancel}>Cancel reservation</Button>
+              </>}
             </div>
           ) : kind === "coaching" ? (
             <div className="space-y-4">

@@ -64,7 +64,7 @@ export function learnerBookings(s: Pick<LearnerState, "purchases" | "registratio
     const resource = findResource(appointment.resourceId);
     if (!resource || resource.type !== "Coaching") continue;
     const past = Date.parse(appointment.scheduledAt) < now;
-    out.push({ id: appointment.id, kind: "coaching", title: resource.title, host: resource.creator, image: resource.image, when: appointment.scheduledAt, status: appointment.status === "cancelled" ? "cancelled" : appointment.status === "completed" || past ? "ended" : "confirmed", when_past: past, href: { to: "/learner/resources/$resourceId", params: { resourceId: resource.id } }, cancellable: appointment.status === "confirmed" && !past, online: true });
+      out.push({ id: appointment.id, itemId: resource.id, kind: "coaching", title: resource.title, host: resource.creator, image: resource.image, when: appointment.scheduledAt, status: appointment.status === "cancelled" ? "cancelled" : appointment.status === "completed" || past ? "ended" : "confirmed", when_past: past, href: { to: "/learner/resources/$resourceId", params: { resourceId: resource.id } }, cancellable: appointment.status === "confirmed" && !past, online: true });
   }
   for (const ownedSession of s.creatorSessionBookings) {
     const current = learnerSessionBooking(ownedSession.creatorHandle, ownedSession.id) ?? ownedSession;
