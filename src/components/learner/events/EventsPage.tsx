@@ -116,7 +116,7 @@ export function EventsPage() {
         </ul>
       </section>
 
-      <section aria-label="Filter events" className="surface events-filters sticky-filter mb-5 p-3 sm:p-4">
+      <section aria-label="Filter events" className="surface events-filters mb-5 p-3 sm:p-4">
         <div className="flex flex-col gap-3 xl:flex-row xl:items-end">
           <div className="min-w-0 lg:w-72"><span className="mb-1 block text-xs font-bold text-muted-foreground" aria-hidden="true">Search</span><SearchInput value={f.q} onChange={(v) => set("q", v)} placeholder="Search events or hosts" /></div>
           <div className="grid flex-1 grid-cols-2 gap-2 sm:grid-cols-4">
