@@ -135,12 +135,24 @@ const affiliateSchema = z.object({
   id: z.string(),
   name: z.string(),
   email: z.string().email(),
+  username: z.string().trim().optional(),
   status: z.enum(["invited", "active", "suspended"]),
   date: z.string(),
   /** Personal commission rate (%) for this affiliate; overrides product and category rates. */
   rate: z.number().finite().min(1).max(90).optional(),
 });
 export type Affiliate = z.infer<typeof affiliateSchema>;
+const sessionBookingSchema = z.object({
+  id: z.string(),
+  itemId: z.string(),
+  kind: z.enum(["coaching", "live"]),
+  learnerName: z.string(),
+  learnerEmail: z.string().email(),
+  scheduledAt: z.string(),
+  createdAt: z.string(),
+  status: z.enum(["requested", "confirmed", "cancelled", "completed", "no_show", "attended"]),
+});
+export type SessionBooking = z.infer<typeof sessionBookingSchema>;
 const ruleSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -244,6 +256,8 @@ export const stateSchema = z.object({
   reviews: z.array(reviewSchema).default([]),
   media: z.array(mediaSchema).default([]),
   affiliates: z.array(affiliateSchema).default([]),
+  /** Simulated bookings and registrations submitted from learner pages. */
+  sessionBookings: z.array(sessionBookingSchema).default([]),
   rules: z.array(ruleSchema).default([]),
   /** Creator's default commission (%) per product category; empty means not set. */
   categoryRates: z.object({ course: z.number(), ebook: z.number(), live: z.number(), coaching: z.number(), service: z.number() }).partial().default({}),
