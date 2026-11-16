@@ -92,7 +92,7 @@ export function notify(s: LearnerState, type: LearnerNotification["type"], title
 export const ownedResourceIds = (s: LearnerState) =>
   [...new Set(s.purchases.filter((p) => p.status === "paid").flatMap((p) => p.items.filter((i) => i.kind === "resource").map((i) => i.id)))];
 export const owns = (s: LearnerState, id: string) => ownedResourceIds(s).includes(id);
-export const registration = (s: LearnerState, eventId: string) => s.registrations.find((r) => r.eventId === eventId);
+export const registration = (s: LearnerState, eventId: string) => s.registrations.find((r) => r.eventId === eventId && !r.cancelledAt);
 export const itemInfo = (r: ItemRef) => {
   const x = r.kind === "resource" ? findResource(r.id) : findEvent(r.id);
   return x ? { title: x.title, price: x.price, image: x.image, by: "creator" in x ? x.creator : x.host } : null;

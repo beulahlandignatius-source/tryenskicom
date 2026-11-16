@@ -200,6 +200,11 @@ export function creatorBookingStatus(handle: string, id: string) {
   return readCreatorRecord(handle)?.state.sessionBookings.find((booking) => booking.id === id) ?? null;
 }
 
+/** Learner-facing current booking status after a creator confirms, moves or closes it. */
+export function learnerSessionBooking(handle: string, id: string) {
+  return readCreatorRecord(handle)?.state.sessionBookings.find((booking) => booking.id === id) ?? null;
+}
+
 /** The sample creator page: opens in any browser so a storefront link can always be tried. */
 export function sampleStore(): PublicStore {
   return { key: "sample", ...SAMPLE_CREATOR, items: sampleItems(), page: samplePage(), verified: true, bio: "", sample: true };
