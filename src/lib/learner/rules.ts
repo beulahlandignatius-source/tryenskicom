@@ -16,7 +16,7 @@ export const stateSchema = z.object({
   cart: z.array(ref.extend({ qty: z.number().int().min(1), addedAt: z.string() })).default([]),
   purchases: z.array(z.object({ id: z.string(), orderNumber: z.string(), date: z.string(), items: z.array(purchaseItem), total: z.number(), status: z.enum(["paid", "pending", "failed"]), method: z.enum(["card", "transfer"]) })).default([]),
   /** name/email/reference are the attendee details given at registration; older registrations may not have them. */
-  registrations: z.array(z.object({ eventId: z.string(), date: z.string(), tickets: z.number().int().min(1), attendedAt: z.string().optional(), name: z.string().optional(), email: z.string().optional(), phone: z.string().optional(), reference: z.string().optional() })).default([]),
+  registrations: z.array(z.object({ eventId: z.string(), date: z.string(), tickets: z.number().int().min(1), attendedAt: z.string().optional(), cancelledAt: z.string().optional(), name: z.string().optional(), email: z.string().optional(), phone: z.string().optional(), reference: z.string().optional() })).default([]),
   /** Creator coaching and live-session reservations; kept separate from event tickets and purchases. */
   creatorSessionBookings: z.array(z.object({
     id: z.string(), creatorHandle: z.string(), itemId: z.string(), kind: z.enum(["coaching", "live"]), scheduledAt: z.string(), createdAt: z.string(),
@@ -233,7 +233,7 @@ export const cancelRegistration = (s: LearnerState, eventId: string): Partial<Le
   const r = registration(s, eventId);
   // Paid tickets come from a purchase; the demo has no refund flow, so only free registrations can be cancelled.
   if (!e || !r || e.price > 0 || r.attendedAt) return {};
-  return { registrations: s.registrations.filter((x) => x.eventId !== eventId) };
+  return { registrations: s.registrations.map((x) => x.eventId === eventId ? { ...x, cancelledAt: new Date().toISOString() } : x) };
 };
 export const markAttended = (s: LearnerState, eventId: string): Partial<LearnerState> =>
   registration(s, eventId) && !registration(s, eventId)!.attendedAt ? { registrations: s.registrations.map((r) => (r.eventId === eventId ? { ...r, attendedAt: new Date().toISOString() } : r)) } : {};
