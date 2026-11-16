@@ -356,25 +356,56 @@ export function MilestoneGallery({ collection = false }: { collection?: boolean 
 }
 export function UniversePage() {
   return (
-    <div>
+    <div className="universe-page mx-auto w-full max-w-[1120px]">
       <Journey full />
       <UniverseNav />
-      <Showroom />
+      <UniverseRibbon />
+      <div className="universe-frame mt-6 sm:mt-8">
+        <Showroom />
+      </div>
       <MilestoneGallery />
-      <section className="surface mt-10 flex flex-wrap items-center justify-between gap-4 p-5 sm:p-6">
-        <div className="min-w-0">
-          <h2 className="flex items-center gap-2.5 text-lg sm:text-xl"><span className="lime-tick" aria-hidden="true" />A character that is yours</h2>
-          <p className="mt-1 text-sm text-muted-foreground">Browse every family and evolution, and pick your favourite.</p>
+      <section className="universe-cta mt-10 flex flex-wrap items-center justify-between gap-4 p-5 sm:p-7">
+        <div className="relative z-10 min-w-0">
+          <p className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.14em] text-lime"><span className="neon-dot" aria-hidden="true" />Enski collection</p>
+          <h2 className="mt-1.5 text-lg text-on-dark sm:text-2xl">A character that is yours</h2>
+          <p className="mt-1 text-sm text-on-dark-muted">Browse every family and evolution, and pick your favourite.</p>
         </div>
-        <Button asChild variant="outline">
-          <Link to="/creator/milestones/collection">
-            Explore collection
-            <ArrowUpRight />
-          </Link>
+        <Button asChild variant="lime" className="relative z-10">
+          <Link to="/creator/milestones/collection">Explore collection<ArrowUpRight /></Link>
         </Button>
       </section>
       <DemoControls />
     </div>
+  );
+}
+
+/** Four branded tiles: level, unlocked chapters, next milestone and progress toward it. */
+function UniverseRibbon() {
+  const { progress: p } = useUniverse();
+  const tiles = [
+    { label: "Current level", value: p.level ? `Level ${p.level}` : "Starter", sub: p.current?.title ?? "Before Spark" },
+    { label: "Chapters unlocked", value: `${p.unlocked.length} of ${MILESTONES.length}`, sub: "Each one evolves your character" },
+    { label: "Next milestone", value: p.next?.title ?? "All unlocked", sub: p.next ? `At ${usd(p.next.threshold)}` : "You reached the top" },
+  ];
+  return (
+    <section aria-label="Your progress" className="mt-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+      {tiles.map((t, i) => (
+        <div key={t.label} className="stat-card surface relative min-w-0 overflow-hidden p-4 sm:p-5">
+          <p className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">{i === 0 && <span className="neon-dot" aria-hidden="true" />}{t.label}</p>
+          <p className="mt-2 truncate text-lg font-extrabold sm:text-2xl">{t.value}</p>
+          <p className="mt-0.5 truncate text-xs text-muted-foreground">{t.sub}</p>
+          <div className="stat-card-bar absolute inset-x-0 bottom-0 h-0.5" aria-hidden="true" />
+        </div>
+      ))}
+      <div className="stat-card is-featured surface relative col-span-2 min-w-0 overflow-hidden p-4 sm:p-5 lg:col-span-1">
+        <p className="text-xs font-semibold text-muted-foreground">Progress to {p.next?.title ?? "the top"}</p>
+        <p className="mt-2 text-lg font-extrabold tabular-nums sm:text-2xl">{Math.round(p.percent)}%</p>
+        <div className="mt-2 h-2 overflow-hidden rounded-full bg-soft" role="progressbar" aria-valuenow={Math.round(p.percent)} aria-valuemin={0} aria-valuemax={100} aria-label="Progress to next milestone">
+          <div className="h-full rounded-full bg-gradient-to-r from-cobalt via-sky to-lime" style={{ width: `${p.percent}%` }} />
+        </div>
+        <p className="mt-1.5 truncate text-xs text-muted-foreground">{p.next ? `${usd(p.remaining)} to go` : "Every chapter earned"}</p>
+      </div>
+    </section>
   );
 }
 export function HistoryPage() {

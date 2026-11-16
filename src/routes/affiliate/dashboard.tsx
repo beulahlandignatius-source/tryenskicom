@@ -17,6 +17,7 @@ import { EmptyState, Panel, StatCard } from "@/components/affiliate/ui";
 import { useAffiliate } from "@/lib/affiliate/store";
 import { meta } from "@/lib/affiliate/meta";
 import { cn } from "@/lib/utils";
+import { TrendBars, ShareDonut, periodBuckets } from "@/components/shared/charts/DashCharts";
 import { ConversionFunnel, ReferralSources } from "@/components/affiliate/Insights";
 import walletIcon from "@/assets/dashboard/icons/enski-wallet.webp.asset.json";
 import analyticsIcon from "@/assets/dashboard/icons/enski-analytics.webp.asset.json";
@@ -76,6 +77,15 @@ function Dashboard() {
         <Link to="/affiliate/transactions" className="dash-link-card" aria-label={`Total earnings: ${naira(b.earnings)}. Open commissions`}><StatCard icon={Coins} label="Total earnings" value={naira(b.earnings)} hint="Commission history" tone="midnight" featured /></Link>
       </div>
 
+      <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
+        <Panel title="Clicks this week" description="Daily clicks on your referral links" actions={<Link to="/affiliate/performance" className="text-xs font-bold text-cobalt">Performance</Link>}>
+          <TrendBars data={periodBuckets("7").map((x) => ({ label: x.label, value: 0 }))} name="Clicks" empty="No clicks yet. Share a link to fill this in." />
+        </Panel>
+        <Panel title="Your promotion mix" description="Products you promote, by topic">
+          <ShareDonut data={[...promoting.reduce((m, p) => m.set(p.category, (m.get(p.category) ?? 0) + 1), new Map<string, number>())].map(([label, value]) => ({ label, value }))}
+            center={String(promoting.length)} centerLabel="promoting" empty="Pick a product in the market to start your mix." />
+        </Panel>
+      </div>
       <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
         <ConversionFunnel />
         <ReferralSources compact />

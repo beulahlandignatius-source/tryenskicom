@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { LineChart, MousePointerClick, Percent, Target, Users, Package } from "lucide-react";
+import { MousePointerClick, Percent, Target, Users, Package } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/dashboard-ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/dashboard-ui/tabs";
@@ -7,6 +7,7 @@ import { EmptyState, EmptyTable, FilterSelect, PageHeader, Panel, StatCard, date
 import { meta } from "@/lib/affiliate/meta";
 import { useAffiliate } from "@/lib/affiliate/store";
 import { products } from "@/lib/affiliate/products";
+import { TrendBars, ShareDonut, periodBuckets } from "@/components/shared/charts/DashCharts";
 import { ConversionFunnel, ReferralSources } from "@/components/affiliate/Insights";
 
 export const Route = createFileRoute("/affiliate/performance")({
@@ -34,17 +35,20 @@ function Performance() {
         <TabsList aria-label="Chart metric"><TabsTrigger value="clicks">Clicks</TabsTrigger><TabsTrigger value="referrals">Referrals</TabsTrigger><TabsTrigger value="conversions">Conversions</TabsTrigger></TabsList>
       }>
         <TabsContent value={metric} className="mt-0">
-        <div className="relative">
-          <div className="pointer-events-none absolute inset-0 flex flex-col justify-between py-2" aria-hidden>
-            {[0, 1, 2, 3, 4].map((i) => <div key={i} className="border-t border-dashed" />)}
-          </div>
-          <div className="relative">
-            <EmptyState icon={LineChart} title="No performance data yet" description={`Your daily ${metric} will be charted here once people start opening your referral links.`} action={<Button asChild variant="outline"><Link to="/affiliate/my-affiliations">Get your links</Link></Button>} />
-          </div>
-        </div>
+          <TrendBars data={periodBuckets(range).map((x) => ({ label: x.label, value: 0 }))} name={metric[0]!.toUpperCase() + metric.slice(1)}
+            color={metric === "clicks" ? "var(--cobalt)" : metric === "referrals" ? "var(--chart-orange)" : "var(--lime)"}
+            empty={`No ${metric} yet. Share a link to start the chart.`} />
         </TabsContent>
       </Panel>
       </Tabs>
+      <div className="mt-6 grid items-start gap-6 lg:grid-cols-2">
+        <Panel title="What you promote" description="Your promoted products by topic">
+          <ShareDonut data={categoryShare(promoted)} center={String(promoted.length)} centerLabel={promoted.length === 1 ? "product" : "products"} empty="Promote a product from the market to see your mix here." />
+        </Panel>
+        <Panel title="Earnings by topic" description="Commission earned from each topic">
+          <TrendBars className="h-52" data={categoryShare(products).map((c) => ({ label: c.label, value: 0 }))} name="Commission" format={(v) => `₦${v.toLocaleString()}`} color="var(--chart-orange)" empty="No commission yet" />
+        </Panel>
+      </div>
       <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
         <ConversionFunnel />
         <ReferralSources />
@@ -56,4 +60,10 @@ function Performance() {
       </Panel>
     </div>
   );
+}
+
+function categoryShare(list: { category: string }[]) {
+  const m = new Map<string, number>();
+  for (const p of list) m.set(p.category, (m.get(p.category) ?? 0) + 1);
+  return [...m].map(([label, value]) => ({ label, value }));
 }
