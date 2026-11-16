@@ -234,6 +234,11 @@ function Hero({ store, name, intro, hasMore, onMore }: { store: PublicStore; nam
           {store.verified && <BadgeCheck className="h-6 w-6 shrink-0 fill-cobalt text-primary-foreground" aria-label="Verified creator" />}
         </h1>
         {store.tagline && <p className="mt-1 text-[15px] font-bold text-ink/80">{store.tagline}</p>}
+        {store.details && (() => {
+          const d = store.details;
+          const chips = [d.experienceYears ? `${d.experienceYears}+ year${d.experienceYears === 1 ? "" : "s"} experience` : "", d.expertise, d.location, d.languages ? `Speaks ${d.languages}` : "", d.credentials].filter(Boolean);
+          return chips.length ? <ul className="mt-3 flex flex-wrap gap-1.5" aria-label="Creator details">{chips.map((c) => <li key={c} className="rounded-full bg-soft px-3 py-1 text-xs font-bold text-ink ring-1 ring-line">{c}</li>)}</ul> : null;
+        })()}
         {intro && <p className="mt-2 max-w-2xl text-[15px] leading-7 text-muted-foreground">{intro} {hasMore && <button type="button" onClick={onMore} className={cn("font-extrabold", accent.text)}>Read more</button>}</p>}
         <div className="mt-4 flex flex-wrap items-center gap-3">
           <button type="button" onClick={follow} aria-pressed={following} className={cn("h-11 min-w-32 rounded-full px-6 text-sm font-extrabold transition-colors", following ? "border bg-card text-ink" : accent.solid)}>

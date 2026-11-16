@@ -23,6 +23,8 @@ export type PublicStore = {
   page: CreatorState["storePage"];
   verified: boolean;
   bio: string;
+  /** Optional credibility details (years of experience, location, expertise, languages, credentials). */
+  details?: { experienceYears: number | null; location: string; expertise: string; languages: string; credentials: string };
   /** Sample page shown to everyone, or a creator's preview with sample products switched on. */
   sample?: boolean;
   /** True when the creator hasn't made the page visible yet (only reachable as a preview). */
@@ -65,6 +67,7 @@ function readAll(includeHidden = false): PublicStore[] {
         page: stateSchema.shape.storePage.safeParse(s?.storePage).data ?? PAGE_DEFAULT,
         verified: s?.verification === "submitted",
         bio: s?.profile?.bio ?? "",
+        details: { experienceYears: typeof f.experienceYears === "number" ? f.experienceYears : null, location: f.location ?? "", expertise: f.expertise ?? "", languages: f.languages ?? "", credentials: f.credentials ?? "" },
         hidden: !f.published,
       });
     } catch {
