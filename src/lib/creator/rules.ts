@@ -154,9 +154,26 @@ const programSchema = z.object({
   date: z.string(),
 });
 export type Program = z.infer<typeof programSchema>;
-export const LANDING_TEMPLATES = ["spotlight", "split", "minimal"] as const;
+/** Legacy layouts (spotlight, split, minimal) stay valid so older saved pages keep loading. */
+export const LANDING_TEMPLATES = ["spotlight", "split", "minimal", "enski-event", "ethereal-luxury", "cyber-grid", "neo-brutalism", "swiss-minimalist", "earthy-organic", "spatial-3d", "glass-material"] as const;
 export const LANDING_MAX_SECTIONS = 4;
-const landingSchema = z.object({
+export const LANDING_MAX_QUESTIONS = 8;
+export const LANDING_BLOCKS = ["stats", "about", "speakers", "features", "countdown", "programme", "testimonials", "cta"] as const;
+export type LandingBlock = (typeof LANDING_BLOCKS)[number];
+const hex = z.string().regex(/^#[0-9a-fA-F]{6}$/);
+export const landingColorsSchema = z.object({
+  primary: hex.default("#1A42A6"), secondary: hex.default("#3D8EF0"), accent: hex.default("#C2F24A"), background: hex.default("#FFFFFF"),
+  heading: hex.default("#0A1F55"), body: hex.default("#3A4A6B"), buttonBg: hex.default("#C2F24A"), buttonText: hex.default("#0A1F55"),
+});
+export type LandingColors = z.infer<typeof landingColorsSchema>;
+const rowSchema = z.object({ id: z.string(), title: z.string().default(""), subtitle: z.string().default(""), text: z.string().default(""), image: z.string().default("") });
+export type LandingRow = z.infer<typeof rowSchema>;
+const questionSchema = z.object({
+  id: z.string(), label: z.string(), type: z.enum(["short", "long", "dropdown", "single", "multiple"]).default("short"),
+  options: z.array(z.string()).default([]), required: z.boolean().default(false),
+});
+export type LandingQuestion = z.infer<typeof questionSchema>;
+export const landingSchema = z.object({
   id: z.string(),
   title: z.string(),
   slug: z.string(),
@@ -168,10 +185,37 @@ const landingSchema = z.object({
   date: z.string(),
   /** Visual layout of the page. */
   template: z.enum(LANDING_TEMPLATES).default("spotlight"),
+  variation: z.enum(["t1", "t2", "t3"]).default("t1"),
+  /** "import" pages publish pasted AI-designed HTML as is and never use the template builder. */
+  mode: z.enum(["template", "import"]).default("template"),
+  importHtml: z.string().max(300_000).default(""),
   /** Uploaded cover image (resized data URL) or empty. */
   cover: z.string().default(""),
+  logo: z.string().default(""),
   /** Extra content blocks, each with an optional image. */
   sections: z.array(z.object({ id: z.string(), title: z.string(), text: z.string(), image: z.string() })).max(LANDING_MAX_SECTIONS).default([]),
+  palette: z.string().default("enski-signature"),
+  colors: landingColorsSchema.default({}),
+  hero: z.object({ brand: z.string().default(""), dateLine: z.string().default(""), line2: z.string().default(""), line3: z.string().default(""), cta2: z.string().default(""), imageUrl: z.string().default("") }).default({}),
+  /** Optional blocks in display order; the hero is always shown first. */
+  blocks: z.array(z.object({ id: z.enum(LANDING_BLOCKS), on: z.boolean() })).default(LANDING_BLOCKS.map((id) => ({ id, on: false }))),
+  content: z.object({
+    stats: z.array(rowSchema).default([]), speakers: z.array(rowSchema).default([]), features: z.array(rowSchema).default([]),
+    programme: z.array(rowSchema).default([]), testimonials: z.array(rowSchema).default([]),
+    about: z.object({ heading: z.string().default(""), text: z.string().default(""), image: z.string().default("") }).default({}),
+    countdown: z.object({ date: z.string().default(""), time: z.string().default("10:00"), zone: z.string().default("Africa/Lagos") }).default({}),
+    cta: z.object({ heading: z.string().default(""), text: z.string().default(""), button: z.string().default("") }).default({}),
+  }).default({}),
+  form: z.object({
+    phone: z.boolean().default(false), whatsapp: z.boolean().default(false),
+    questions: z.array(questionSchema).max(LANDING_MAX_QUESTIONS).default([]),
+    after: z.enum(["thanks", "product", "url"]).default("thanks"),
+    thanks: z.string().default("Thank you! You're registered."), redirectItemId: z.string().default(""), redirectUrl: z.string().default(""),
+  }).default({}),
+  metaTitle: z.string().default(""),
+  metaDescription: z.string().default(""),
+  /** Only set when real visits are recorded; never invented. */
+  views: z.number().int().nonnegative().optional(),
 });
 export type LandingPage = z.infer<typeof landingSchema>;
 export type LandingSection = LandingPage["sections"][number];
@@ -181,6 +225,10 @@ const leadSchema = z.object({
   name: z.string(),
   email: z.string().email(),
   date: z.string(),
+  phone: z.string().optional(),
+  whatsapp: z.string().optional(),
+  answers: z.array(z.object({ question: z.string(), answer: z.string() })).optional(),
+  source: z.string().optional(),
 });
 export type Lead = z.infer<typeof leadSchema>;
 const daySchema = z.object({ enabled: z.boolean(), start: z.string(), end: z.string() });
@@ -359,12 +407,20 @@ export function saveRule(rules: CommissionRule[], rule: CommissionRule) {
   return rule.isDefault ? next.map((r) => ({ ...r, isDefault: r.id === rule.id })) : next;
 }
 export function validateLanding(p: LandingPage, pages: LandingPage[]) {
-  if (!p.title.trim() || !p.headline.trim()) return "Add a page title and headline.";
+  if (p.mode === "import") {
+    if (!p.title.trim()) return "Add a page title.";
+    if (!p.importHtml.trim()) return "Paste your AI-designed page before saving.";
+  } else if (!p.title.trim() || !p.headline.trim()) return "Add a page title and headline.";
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(p.slug))
     return "Use lowercase letters, numbers and single hyphens for the page address.";
   if (pages.some((x) => x.id !== p.id && x.slug === p.slug))
     return "Another landing page already uses this address.";
-  if (!p.cta.trim()) return "Add a button label.";
+  if (p.mode !== "import" && !p.cta.trim()) return "Add a button label.";
+  const form = (p.form as LandingPage["form"] | undefined) ?? { questions: [], after: "thanks", redirectUrl: "", redirectItemId: "" };
+  if (form.questions.some((q) => !q.label.trim())) return "Give every registration question a label, or remove it.";
+  if (form.questions.some((q) => ["dropdown", "single", "multiple"].includes(q.type) && q.options.filter((o) => o.trim()).length < 2)) return "Choice questions need at least two options.";
+  if (form.after === "url" && !/^https?:\/\/[^\s.]+\.[^\s]+$/.test(form.redirectUrl.trim())) return "Enter a full web address starting with https:// for the redirect.";
+  if (form.after === "product" && !form.redirectItemId) return "Choose which product to send people to.";
   if (p.sections.some((x) => !x.title.trim())) return "Give every section a title, or remove it.";
   return "";
 }

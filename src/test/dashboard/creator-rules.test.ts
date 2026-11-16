@@ -16,7 +16,7 @@ import {
   stateSchema,
   type CreatorItem,
   type Promotion,
-  type LandingPage, creatorBalances, currencyPayoutError } from "@/lib/creator/rules";
+  type LandingPage, landingSchema, creatorBalances, currencyPayoutError } from "@/lib/creator/rules";
 const item: CreatorItem = {
   id: "toolkit",
   kind: "ebook",
@@ -132,7 +132,7 @@ describe("Affiliate commission rules", () => {
   });
 });
 describe("Landing pages and availability", () => {
-  const page: LandingPage = { id: "p", title: "Launch", slug: "launch", itemId: "", headline: "Join", body: "", cta: "Join", status: "draft", date: "", template: "spotlight", cover: "", sections: [] };
+  const page: LandingPage = landingSchema.parse({ id: "p", title: "Launch", slug: "launch", itemId: "", headline: "Join", body: "", cta: "Join", status: "draft", date: "", template: "spotlight", cover: "", sections: [] });
   it("requires every added section to have a title", () => {
     expect(validateLanding({ ...page, sections: [{ id: "s", title: " ", text: "", image: "" }] }, [])).not.toBe("");
     expect(validateLanding({ ...page, sections: [{ id: "s", title: "What you get", text: "", image: "" }] }, [])).toBe("");
