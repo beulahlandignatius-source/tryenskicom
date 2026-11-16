@@ -24,10 +24,10 @@ describe("creator bookings", () => {
   });
   it("a past session still marked scheduled needs an outcome", () => {
     expect(rows.find((r) => r.id === "past")?.label).toBe("Needs outcome");
-    expect(needsAction(rows).map((r) => r.id)).toEqual(["past", "brief"]);
+    expect(needsAction(rows).map((r) => r.id)).toEqual(["past", "brief", "session-1"]);
   });
   it("upcoming sessions are future only, soonest first", () => {
-    expect(upcomingSessions(rows, now).map((r) => r.id)).toEqual(["next", "live-live"]);
+    expect(upcomingSessions(rows, now).map((r) => r.id)).toEqual(["next", "session-1", "live-live"]);
   });
   it("earnings count paid coaching, live and service orders only", () => {
     expect(facilitationEarnings(rows)).toBe(40000);

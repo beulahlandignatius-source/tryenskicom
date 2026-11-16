@@ -108,6 +108,7 @@ export function MyBookingsPage() {
               } else {
                 update((s) => cancelRegistration(s, cancel.id.slice(2)));
               }
+            }
           setCancel(null);
           toast.success("Booking cancelled");
         }}

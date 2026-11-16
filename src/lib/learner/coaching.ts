@@ -84,9 +84,10 @@ export function saveCreatorSessionToLearner(booking: {
   }
 }
 
-export function updateLearnerCreatorSession(id: string, patch: Partial<LearnerState["creatorSessionBookings"][number]>) {
+export function updateLearnerCreatorSession(id: string, patch: Partial<LearnerState["creatorSessionBookings"][number]>, learnerEmail?: string) {
   if (typeof window === "undefined") return false;
-  const key = accountStorageKey(STORAGE_KEY, currentDemoProfile());
+  const email = learnerEmail?.trim().toLowerCase();
+  const key = email ? `${STORAGE_KEY}:${email}` : accountStorageKey(STORAGE_KEY, currentDemoProfile());
   try {
     const parsed = stateSchema.safeParse(JSON.parse(localStorage.getItem(key) ?? "null"));
     if (!parsed.success || !parsed.data.creatorSessionBookings.some((booking) => booking.id === id)) return false;

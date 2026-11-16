@@ -18,7 +18,7 @@ export function SessionRequests() {
       sessionBookings: current.sessionBookings.map((row) => row.id === booking.id ? { ...row, ...next } : row),
       activity: [...current.activity, activityEntry(`${label}: ${booking.itemTitle ?? "Session"} · ${booking.learnerName}`)],
     }));
-    updateLearnerCreatorSession(booking.id, next);
+    updateLearnerCreatorSession(booking.id, next, booking.learnerEmail);
     toast.success(label);
   };
   const slots = moving?.kind === "coaching" ? (() => {
