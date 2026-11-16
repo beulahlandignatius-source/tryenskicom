@@ -50,7 +50,20 @@ export function SessionDetails({ handle, itemId, kind }: { handle: string; itemI
       setError("That time is no longer available. Choose another time.");
       return;
     }
-    const learnerBooking = { ...booking, creatorHandle: handle };
+    const learnerBooking = {
+      id: booking.id,
+      creatorHandle: handle,
+      itemId,
+      kind,
+      scheduledAt: booking.scheduledAt,
+      createdAt: booking.createdAt,
+      itemTitle: offer.item.title,
+      creatorName: offer.owner,
+      image: offer.item.image,
+      online: booking.online,
+      meetingLink: booking.meetingLink ?? "",
+      status: booking.status,
+    };
     const savedToLearner = saveCreatorSessionToLearner(learnerBooking, { name: learnerName, email: learnerEmail });
     if (!savedToLearner) {
       updateCreatorSessionBooking(handle, booking.id, { status: "cancelled" });
