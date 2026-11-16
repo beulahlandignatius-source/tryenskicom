@@ -13,6 +13,7 @@ import { localDateTime, useViewerTimeZone } from "@/lib/learner/timezone";
 import { badgeDefs, dayKey, itemInfo, learningStreak, ownedResourceIds, profileCompletion, resourceProgress } from "@/lib/learner/rules";
 import { useLearner } from "@/lib/learner/store";
 import { cn } from "@/lib/utils";
+import { TrendBars, ShareDonut, periodBuckets } from "@/components/shared/charts/DashCharts";
 import { BadgeArt } from "./BadgeArt";
 import { LearnerAvatar } from "./Header";
 import { EventCard, price, shortDate } from "./shared";
@@ -81,6 +82,15 @@ export function LearnerDashboard() {
           </div>
         </div>
       </section>
+      <div className="mb-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
+        <Panel title="Your learning week" description="Days you learned in the last 14 days">
+          <TrendBars data={periodBuckets("14").map((x) => ({ label: x.label, value: state.learningDays.includes(x.key) ? 1 : 0 }))} name="Learning" format={(v) => (v ? "Learned" : "")} color="var(--lime)" empty="Open a lesson to start your streak." />
+        </Panel>
+        <Panel title="Your library mix" description="What you own, by topic">
+          <ShareDonut data={[...owned.reduce((m, id) => { const c = findResource(id)?.category; return c ? m.set(c, (m.get(c) ?? 0) + 1) : m; }, new Map<string, number>())].map(([label, value]) => ({ label, value }))}
+            center={String(owned.length)} centerLabel={owned.length === 1 ? "resource" : "resources"} empty="Your first course or eBook will show up here." />
+        </Panel>
+      </div>
       <ContinueLearning />
       <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Link to="/learner/resources" search={{}} className="dash-link-card" aria-label={`Resources owned: ${owned.length}. Open your library`}><StatCard icon={Library} label="Resources owned" value={String(owned.length)} hint="Open library" /></Link>

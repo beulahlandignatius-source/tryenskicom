@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { LineChart, MousePointerClick, Percent, Target, Users, Package } from "lucide-react";
+import { MousePointerClick, Percent, Target, Users, Package } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/dashboard-ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/dashboard-ui/tabs";
