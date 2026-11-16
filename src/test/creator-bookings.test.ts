@@ -15,7 +15,7 @@ const state = {
     order("buy", "course"),
   ],
   sessionBookings: [{ id: "session-1", itemId: "coach", kind: "coaching", learnerName: "Bola", learnerEmail: "bola@example.com", scheduledAt: "2026-11-15T11:00:00Z", createdAt: "2026-11-10", status: "requested" }],
-};
+} as never;
 
 describe("creator bookings", () => {
   const rows = bookingRows(state, now);

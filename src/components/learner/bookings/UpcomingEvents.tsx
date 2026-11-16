@@ -41,7 +41,7 @@ export function UpcomingEventsPage() {
               <div className="flex flex-1 flex-col gap-1.5 p-3 sm:p-4">
                 <p className="text-[11px] font-extrabold uppercase tracking-wide text-sky-text">{l.offer.item.kind === "coaching" ? l.offer.format === "group" ? "Group coaching" : "1:1 coaching" : "Live session"} · {l.offer.item.category}</p>
                 <h3 className="line-clamp-2 text-sm font-bold leading-snug sm:text-[15px]">
-                  <Link to="/learner/session" search={{ handle: l.offer.handle, itemId: l.offer.item.id, kind: l.offer.item.kind }} className="after:absolute after:inset-0 focus-visible:outline-none">{l.offer.item.title}</Link>
+                  <Link to="/learner/session" search={{ handle: l.offer.handle, itemId: l.offer.item.id, kind: l.offer.item.kind === "live" ? "live" : "coaching" }} className="after:absolute after:inset-0 focus-visible:outline-none">{l.offer.item.title}</Link>
                 </h3>
                 <p className="truncate text-xs text-muted-foreground">{l.offer.owner} · {l.offer.durationMinutes} minutes</p>
                 {l.offer.item.kind === "live" && l.offer.item.date && <p className="text-xs font-semibold text-muted-foreground">{new Date(l.offer.item.date).toLocaleString()}</p>}

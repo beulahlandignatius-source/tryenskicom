@@ -18,7 +18,11 @@ export function SessionRequests() {
       sessionBookings: current.sessionBookings.map((row) => row.id === booking.id ? { ...row, ...next } : row),
       activity: [...current.activity, activityEntry(`${label}: ${booking.itemTitle ?? "Session"} · ${booking.learnerName}`)],
     }));
-    updateLearnerCreatorSession(booking.id, next, booking.learnerEmail);
+    updateLearnerCreatorSession(booking.id, {
+      ...(next.status ? { status: next.status } : {}),
+      ...(next.scheduledAt ? { scheduledAt: next.scheduledAt } : {}),
+      ...(next.meetingLink ? { meetingLink: next.meetingLink } : {}),
+    }, booking.learnerEmail);
     toast.success(label);
   };
   const slots = moving?.kind === "coaching" ? (() => {

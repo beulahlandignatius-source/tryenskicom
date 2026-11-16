@@ -29,7 +29,7 @@ export function SessionDetails({ handle, itemId, kind }: { handle: string; itemI
   const liveAt = offer?.item.kind === "live" ? offer.item.date : "";
   const currentStatus = existing ? learnerSessionBooking(handle, existing.id)?.status ?? existing.status : null;
 
-  if (!offer) return <LearnerNotFound what="session" />;
+  if (!offer) return <LearnerNotFound what="page" />;
   const location = offer.venue === "in_person" ? "In person" : offer.venue === "phone" ? "Phone" : "Online";
   const scheduledAt = kind === "live" ? liveAt : selectedTime;
   const statusTone = currentStatus === "confirmed" || currentStatus === "live" ? "success" : currentStatus === "requested" ? "pending" : currentStatus === "cancelled" ? "neutral" : "info";
@@ -50,13 +50,14 @@ export function SessionDetails({ handle, itemId, kind }: { handle: string; itemI
       setError("That time is no longer available. Choose another time.");
       return;
     }
-    const savedToLearner = saveCreatorSessionToLearner(booking, { name: learnerName, email: learnerEmail });
+    const learnerBooking = { ...booking, creatorHandle: handle };
+    const savedToLearner = saveCreatorSessionToLearner(learnerBooking, { name: learnerName, email: learnerEmail });
     if (!savedToLearner) {
       updateCreatorSessionBooking(handle, booking.id, { status: "cancelled" });
       setError("Your booking couldn't be saved. Please try again.");
       return;
     }
-    update((s) => ({ creatorSessionBookings: [booking, ...s.creatorSessionBookings.filter((saved) => saved.id !== booking.id)] }));
+    update((s) => ({ creatorSessionBookings: [learnerBooking, ...s.creatorSessionBookings.filter((saved) => saved.id !== booking.id)] }));
     toast.success(kind === "coaching" ? "Coaching request sent" : "Session registration saved", { description: "No payment or live broadcast was started." });
     void navigate({ to: "/learner/bookings" });
   };
