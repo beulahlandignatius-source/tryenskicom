@@ -5,19 +5,19 @@ import type { LandingPage, LandingRow } from "@/lib/creator/rules";
 import { enabledBlocks } from "@/lib/creator/landing";
 
 export type Device = "desktop" | "tablet" | "mobile";
-type Look = { hero: string; card: string; h: string; radius: string; btn: string; deco?: ReactNode; section?: string };
+type Look = { onDark?: boolean; hero: string; card: string; h: string; radius: string; btn: string; deco?: ReactNode; section?: string };
 
 /** Each template's own composition. Creator colours arrive as --lp-* variables and only apply inside this page. */
 const LOOKS: Record<string, Look> = {
-  "enski-event": { hero: "bg-[var(--lp-primary)] text-[var(--lp-bg)]", card: "rounded-[20px] bg-[color-mix(in_oklab,var(--lp-secondary)_10%,var(--lp-bg))]", h: "font-extrabold tracking-tight", radius: "rounded-full", btn: "rounded-full" },
+  "enski-event": { onDark: true, hero: "bg-[var(--lp-primary)] text-[var(--lp-bg)]", card: "rounded-[20px] bg-[color-mix(in_oklab,var(--lp-secondary)_10%,var(--lp-bg))]", h: "font-extrabold tracking-tight", radius: "rounded-full", btn: "rounded-full" },
   "ethereal-luxury": { hero: "bg-[radial-gradient(ellipse_at_top,color-mix(in_oklab,var(--lp-accent)_45%,var(--lp-bg)),var(--lp-bg)_70%)] text-[var(--lp-heading)]", card: "rounded-[28px] bg-[color-mix(in_oklab,var(--lp-accent)_14%,var(--lp-bg))]", h: "font-serif font-normal tracking-tight", radius: "rounded-full", btn: "rounded-full", section: "py-16" },
-  "cyber-grid": { hero: "bg-[var(--lp-heading)] text-[var(--lp-bg)] bg-[linear-gradient(color-mix(in_oklab,var(--lp-secondary)_25%,transparent)_1px,transparent_1px),linear-gradient(90deg,color-mix(in_oklab,var(--lp-secondary)_25%,transparent)_1px,transparent_1px)] bg-[size:28px_28px]", card: "rounded-none border border-[var(--lp-secondary)] shadow-[0_0_18px_color-mix(in_oklab,var(--lp-secondary)_35%,transparent)]", h: "font-mono uppercase tracking-wider", radius: "rounded-none", btn: "rounded-none font-mono uppercase" },
+  "cyber-grid": { onDark: true, hero: "bg-[var(--lp-heading)] text-[var(--lp-bg)] bg-[linear-gradient(color-mix(in_oklab,var(--lp-secondary)_25%,transparent)_1px,transparent_1px),linear-gradient(90deg,color-mix(in_oklab,var(--lp-secondary)_25%,transparent)_1px,transparent_1px)] bg-[size:28px_28px]", card: "rounded-none border border-[var(--lp-secondary)] shadow-[0_0_18px_color-mix(in_oklab,var(--lp-secondary)_35%,transparent)]", h: "font-mono uppercase tracking-wider", radius: "rounded-none", btn: "rounded-none font-mono uppercase" },
   "neo-brutalism": { hero: "bg-[var(--lp-accent)] text-[var(--lp-heading)] border-b-4 border-[var(--lp-heading)]", card: "rounded-none border-[3px] border-[var(--lp-heading)] bg-[var(--lp-bg)] shadow-[6px_6px_0_var(--lp-heading)]", h: "font-black uppercase", radius: "rounded-none", btn: "rounded-none border-[3px] border-[var(--lp-heading)] shadow-[4px_4px_0_var(--lp-heading)]" },
   "swiss-minimalist": { hero: "bg-[var(--lp-bg)] text-[var(--lp-heading)] border-b border-[var(--lp-heading)]", card: "rounded-none border-t-2 border-[var(--lp-heading)] pt-4", h: "font-extrabold tracking-tighter", radius: "rounded-none", btn: "rounded-none" },
   "earthy-organic": { hero: "bg-[color-mix(in_oklab,var(--lp-accent)_45%,var(--lp-bg))] text-[var(--lp-heading)]", card: "rounded-[32px] bg-[color-mix(in_oklab,var(--lp-accent)_30%,var(--lp-bg))]", h: "font-serif font-semibold", radius: "rounded-[40px]", btn: "rounded-full" },
-  "spatial-3d": { hero: "bg-[linear-gradient(135deg,var(--lp-primary),var(--lp-secondary))] text-[var(--lp-bg)] [perspective:900px]", card: "rounded-[22px] bg-[var(--lp-bg)] shadow-[0_24px_40px_-18px_color-mix(in_oklab,var(--lp-primary)_55%,transparent)] [transform:translateZ(0)_rotateX(4deg)]", h: "font-extrabold", radius: "rounded-[28px]", btn: "rounded-[14px] shadow-[0_10px_20px_-8px_rgba(0,0,0,.45)]",
+  "spatial-3d": { onDark: true, hero: "bg-[linear-gradient(135deg,var(--lp-primary),var(--lp-secondary))] text-[var(--lp-bg)] [perspective:900px]", card: "rounded-[22px] bg-[var(--lp-bg)] shadow-[0_24px_40px_-18px_color-mix(in_oklab,var(--lp-primary)_55%,transparent)] [transform:translateZ(0)_rotateX(4deg)]", h: "font-extrabold", radius: "rounded-[28px]", btn: "rounded-[14px] shadow-[0_10px_20px_-8px_rgba(0,0,0,.45)]",
     deco: <><span className="absolute -right-6 top-6 h-24 w-24 rounded-[22px] bg-[var(--lp-accent)] opacity-90 shadow-2xl [transform:rotate(18deg)]" /><span className="absolute bottom-6 left-4 h-14 w-14 rounded-full bg-[var(--lp-bg)]/30 shadow-xl" /></> },
-  "glass-material": { hero: "bg-[radial-gradient(circle_at_20%_20%,var(--lp-secondary),transparent_55%),radial-gradient(circle_at_80%_60%,var(--lp-accent),transparent_50%),var(--lp-primary)] text-[var(--lp-bg)]", card: "rounded-[22px] border border-[color-mix(in_oklab,var(--lp-bg)_60%,transparent)] bg-[color-mix(in_oklab,var(--lp-secondary)_10%,var(--lp-bg))] backdrop-blur", h: "font-bold", radius: "rounded-[24px]", btn: "rounded-[14px]" },
+  "glass-material": { onDark: true, hero: "bg-[radial-gradient(circle_at_20%_20%,var(--lp-secondary),transparent_55%),radial-gradient(circle_at_80%_60%,var(--lp-accent),transparent_50%),var(--lp-primary)] text-[var(--lp-bg)]", card: "rounded-[22px] border border-[color-mix(in_oklab,var(--lp-bg)_60%,transparent)] bg-[color-mix(in_oklab,var(--lp-secondary)_10%,var(--lp-bg))] backdrop-blur", h: "font-bold", radius: "rounded-[24px]", btn: "rounded-[14px]" },
 };
 
 export function PagePreview({ page, device, product, store, interactive = false }: { page: LandingPage; device: Device; product?: { title: string; price: number } | undefined; store: string; interactive?: boolean }) {
@@ -27,9 +27,10 @@ export function PagePreview({ page, device, product, store, interactive = false 
   const pad = small ? "px-5" : device === "tablet" ? "px-8" : "px-12";
   const style = { "--lp-primary": col.primary, "--lp-secondary": col.secondary, "--lp-accent": col.accent, "--lp-bg": col.background, "--lp-heading": col.heading, "--lp-body": col.body, "--lp-btn": col.buttonBg, "--lp-btn-text": col.buttonText, background: col.background, color: col.body } as CSSProperties;
   const bg = page.cover || page.hero.imageUrl;
-  const btn = (label: string, ghost = false) => (
-    <span className={cn("inline-flex h-11 items-center px-6 text-sm font-extrabold", look.btn, ghost ? "border-2 border-current bg-transparent" : "bg-[var(--lp-btn)] text-[var(--lp-btn-text)]")}>{label}</span>
+  const btn = (label: string, ghost = false, onHero = false) => (
+    <span className={cn("inline-flex h-11 items-center px-6 text-sm font-extrabold", look.btn, ghost ? "border-2 border-current bg-transparent" : onHero ? "bg-[var(--lp-accent)] text-[var(--lp-heading)]" : "bg-[var(--lp-btn)] text-[var(--lp-btn-text)]")}>{label}</span>
   );
+  const heroDark = look.onDark || page.variation === "t3";
   const H = ({ children, className }: { children: ReactNode; className?: string }) => <h2 className={cn(look.h, "text-[var(--lp-heading)]", small ? "text-2xl" : "text-3xl", className)}>{children}</h2>;
   const grid = small ? "grid-cols-1" : device === "tablet" ? "grid-cols-2" : "grid-cols-3";
   const v = page.variation;
@@ -43,7 +44,7 @@ export function PagePreview({ page, device, product, store, interactive = false 
         {page.hero.line3 && <span className="block">{page.hero.line3}</span>}
       </h1>
       <p className="mt-4 whitespace-pre-wrap text-[15px] opacity-85">{page.body || "Describe who it's for and what they'll get."}</p>
-      <div className={cn("mt-6 flex flex-wrap gap-3", v === "t1" && "justify-center")}>{btn(page.cta || "Register now")}{page.hero.cta2 && btn(page.hero.cta2, true)}</div>
+      <div className={cn("mt-6 flex flex-wrap gap-3", v === "t1" && "justify-center")}>{btn(page.cta || "Register now", false, heroDark)}{page.hero.cta2 && btn(page.hero.cta2, true)}</div>
       {product && <p className="mt-4 text-sm font-bold opacity-90">{product.title} · {product.price ? naira(product.price) : "Free"}</p>}
     </div>
   );
@@ -59,7 +60,7 @@ export function PagePreview({ page, device, product, store, interactive = false 
       case "countdown": return k.countdown.date ? <Countdown date={k.countdown.date} time={k.countdown.time} zone={k.countdown.zone} look={look} live={interactive} /> : null;
       case "programme": return k.programme.length ? <><H>Programme</H><ol className="mt-6 space-y-3">{k.programme.map((r) => <li key={r.id} className={cn(look.card, "flex gap-4 p-4")}><span className="w-20 shrink-0 font-extrabold text-[var(--lp-primary)]">{r.subtitle}</span><span><span className="block font-bold text-[var(--lp-heading)]">{r.title}</span><span className="block text-sm">{r.text}</span></span></li>)}</ol></> : null;
       case "testimonials": return k.testimonials.length ? <><H>What people say</H>{rows(k.testimonials, (r) => <><p className="italic leading-7">“{r.text}”</p><div className="mt-4 flex items-center gap-3">{img(r.image, "h-10 w-10 rounded-full")}<span><span className="block text-sm font-extrabold text-[var(--lp-heading)]">{r.title}</span><span className="block text-xs">{r.subtitle}</span></span></div></>)}</> : null;
-      case "cta": return (k.cta.heading || k.cta.button) ? <div className={cn("bg-[var(--lp-primary)] p-8 text-center text-[var(--lp-bg)]", look.radius)}><h2 className={cn(look.h, small ? "text-2xl" : "text-3xl")}>{k.cta.heading}</h2><p className="mt-2 opacity-85">{k.cta.text}</p><div className="mt-5">{btn(k.cta.button || page.cta || "Register now")}</div></div> : null;
+      case "cta": return (k.cta.heading || k.cta.button) ? <div className={cn("bg-[var(--lp-primary)] p-8 text-center text-[var(--lp-bg)]", look.radius)}><h2 className={cn(look.h, small ? "text-2xl" : "text-3xl")}>{k.cta.heading}</h2><p className="mt-2 opacity-85">{k.cta.text}</p><div className="mt-5">{btn(k.cta.button || page.cta || "Register now", false, true)}</div></div> : null;
     }
     return null;
   };
