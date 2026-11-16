@@ -10,7 +10,7 @@ import { Label } from "@/components/dashboard-ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/dashboard-ui/dialog";
 import { DialogActions } from "@/components/shared/DialogActions";
 import { ConfirmDialog, ConfirmNote } from "@/components/shared/BrandDialog";
-import { brandArtwork } from "@/components/affiliate/BrandIcon";
+import { BrandIcon, brandArtwork } from "@/components/affiliate/BrandIcon";
 import { EmptyState, FilterSelect, PageHeader, Panel, SearchInput } from "@/components/affiliate/ui";
 import { Field } from "@/components/affiliate/Field";
 import { removeWhere, restoreAt, sameId } from "@/lib/shared/listUndo";
@@ -39,10 +39,11 @@ export function SourceBadge({ source }: { source: RateSource }) {
   return <span className={cn("inline-flex whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-extrabold", SOURCE_TONE[source])}>{SOURCE_LABEL[source]}</span>;
 }
 
+const STAT_ART = new Map<typeof Users, string>([[Users, brandArtwork.people], [UserCheck, brandArtwork.success], [TrendingUp, brandArtwork.analytics], [Megaphone, brandArtwork.megaphone], [Receipt, brandArtwork.receipt], [BadgePercent, brandArtwork.cash], [Layers, brandArtwork.package]]);
 function Stat({ label, value, hint, icon: Icon }: { label: string; value: ReactNode; hint?: string | undefined; icon: typeof Users }) {
   return (
     <div className="surface flex flex-col gap-2 p-4">
-      <span className="flex items-center gap-2 text-xs font-bold text-muted-foreground"><Icon className="h-4 w-4 text-cobalt" aria-hidden="true" />{label}</span>
+      <span className="flex items-center gap-2.5 text-xs font-bold text-muted-foreground"><BrandIcon src={STAT_ART.get(Icon) ?? brandArtwork.analytics} className="stat-art h-10 w-10" />{label}</span>
       <span className="text-xl font-extrabold tabular-nums sm:text-2xl">{value}</span>
       {hint && <span className="text-[12px] text-muted-foreground">{hint}</span>}
     </div>

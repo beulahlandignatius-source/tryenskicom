@@ -156,6 +156,11 @@ export function LandingPagesList() {
       {!state.landingPages.length && (
         <section className="surface overflow-hidden">
           <EmptyState icon={ShoppingBag} title="No landing pages yet" description="Build from a template or import an AI-designed page, then publish in minutes." action={create} />
+          <div className="mx-auto grid max-w-2xl grid-cols-3 gap-3 px-5 pb-10">
+            {([["spotlight", "Spotlight"], ["split", "Split"], ["minimal", "Minimal"]] as const).map(([t, n]) => (
+              <div key={t} className="text-center"><TemplateThumb id={t} className="aspect-[4/3] w-full" /><p className="mt-2 text-xs font-extrabold">{n}</p></div>
+            ))}
+          </div>
         </section>
       )}
     </div>
