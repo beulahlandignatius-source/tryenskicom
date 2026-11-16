@@ -4,11 +4,11 @@ import { events } from "./catalog";
 
 describe("learner bookings", () => {
   it("starts empty with no purchases or registrations", () => {
-    expect(learnerBookings({ purchases: [], registrations: [] })).toEqual([]);
+    expect(learnerBookings({ purchases: [], registrations: [], coachingAppointments: [], creatorSessionBookings: [] })).toEqual([]);
   });
   it("puts a registration for a finished event in past", () => {
     const e = events[0]!;
-    const [b] = learnerBookings({ purchases: [], registrations: [{ eventId: e.id, date: "", tickets: 1 }] }, Date.parse(e.start) + 864e5);
+    const [b] = learnerBookings({ purchases: [], registrations: [{ eventId: e.id, date: "", tickets: 1 }], coachingAppointments: [], creatorSessionBookings: [] }, Date.parse(e.start) + 864e5);
     expect(b?.when_past).toBe(true);
   });
   it("lists no gigs", () => {

@@ -15,6 +15,9 @@ describe("event registration flow", () => {
     expect(done.registrations).toHaveLength(1);
     const next = { ...withDraft, ...done };
     expect(canRegister(next, free.id)).toEqual({ ok: false, reason: "You're already registered" });
+    const cancelled = { ...next, ...registerCancel(next, free.id) };
+    expect(cancelled.registrations[0]?.cancelledAt).toBeTruthy();
+    expect(canRegister(cancelled, free.id)).toEqual({ ok: true });
   });
   it("requires name, email and agreement before details can be saved", () => {
     const problems = draftProblems({ ...blankDraft(state().profile), name: "", email: "nope", agree: false });

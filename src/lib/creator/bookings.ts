@@ -32,7 +32,7 @@ function clientName(s: Pick<CreatorState, "customers">, o: Order) {
   return s.customers.find((c) => c.id === o.customerId)?.name ?? "Client";
 }
 
-export function bookingRows(s: Pick<CreatorState, "items" | "orders" | "customers">, now = Date.now()): BookingRow[] {
+export function bookingRows(s: Pick<CreatorState, "items" | "orders" | "customers" | "sessionBookings">, now = Date.now()): BookingRow[] {
   const rows: BookingRow[] = [];
   const items = s.items.filter((i) => isFacilitation(i.kind) && !i.binnedAt);
   for (const item of items) {
@@ -85,8 +85,7 @@ export function bookingRows(s: Pick<CreatorState, "items" | "orders" | "customer
       }
     }
   }
-  const sessionState = s as Pick<CreatorState, "items" | "orders" | "customers"> & Partial<Pick<CreatorState, "sessionBookings">>;
-  for (const booking of sessionState.sessionBookings ?? []) {
+  for (const booking of s.sessionBookings) {
     const item = items.find((candidate) => candidate.id === booking.itemId);
     if (!item) continue;
     const past = Date.parse(booking.scheduledAt) < now;
