@@ -10,7 +10,7 @@ export type TrendPoint = { label: string; value: number };
 
 /** Bar chart over a period. With no activity the bars sit at zero and a calm note explains why. */
 export function TrendBars({ data, name, format = (v) => String(v), empty, className, color = "var(--cobalt)", multicolor }: {
-  data: TrendPoint[]; name: string; format?: (v: number) => string; empty?: string; className?: string; color?: string;
+  data: TrendPoint[]; name: string; format?: (v: number) => string; empty?: string; className?: string; color?: string; multicolor?: boolean;
 }) {
   const none = data.every((d) => !d.value);
   return (
