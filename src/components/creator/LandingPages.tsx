@@ -3,35 +3,23 @@ import { ConfirmDialog, ConfirmNote } from "@/components/shared/BrandDialog";
 import { DialogActions } from "@/components/shared/DialogActions";
 import { removeWhere, restoreAll, restoreAt, sameId } from "@/lib/shared/listUndo";
 import { undoToast } from "@/lib/shared/undo";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { ArrowDown, ArrowUp, Check, Eye, Globe, LayoutTemplate, Monitor, Rows3, Save, Send, ShoppingBag, SlidersHorizontal, Smartphone, Plus, Pencil, Trash2, Type, Users, Copy, Download, UserPlus } from "lucide-react";
+import { Eye, Globe, ShoppingBag, Plus, Pencil, Trash2, Users, Copy, Download, UserPlus, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { naira } from "@/lib/affiliate/products";
-import { ImageUpload } from "./ImageUpload";
 import { toast } from "sonner";
 import { Button } from "@/components/dashboard-ui/button";
 import { Input } from "@/components/dashboard-ui/input";
-import { Textarea } from "@/components/dashboard-ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/dashboard-ui/dialog";
 import { PageHeader, Panel, EmptyState, FilterSelect, StatCard } from "@/components/affiliate/ui";
 import { Field } from "@/components/affiliate/Field";
 import { useCreator, activityEntry } from "@/lib/creator/store";
-import { LANDING_MAX_SECTIONS, isEmail, slugify, validateLanding, type LandingPage, type LandingSection } from "@/lib/creator/rules";
+import { isEmail, type LandingPage } from "@/lib/creator/rules";
 import { CreatorNotFound, ItemStatus, copyText, downloadCsv, shortDate } from "./shared";
 import { LandingBuilder } from "./landing/Builder";
 import { PagePreview } from "./landing/PagePreview";
 import { conversionRate, pageUrl, templateName } from "@/lib/creator/landing";
-const templates: { id: LandingPage["template"]; name: string; text: string }[] = [
-  { id: "spotlight", name: "Spotlight", text: "Bold centred hero" },
-  { id: "split", name: "Split", text: "Text beside image" },
-  { id: "minimal", name: "Minimal", text: "Clean and text-led" },
-];
-const sectionPresets = [
-  { title: "What you'll get", text: "List the outcomes, lessons or files people receive." },
-  { title: "About me", text: "Introduce yourself and why you're the right person to learn from." },
-  { title: "What people say", text: "Share a short quote from a happy customer." },
-];
 function PageThumb({ page, className }: { page: LandingPage; className?: string }) {
   if (page.mode === "import") return <div data-surface="dark" className={cn("bg-brand-panel grid place-items-center rounded-[14px] font-mono text-xs text-lime", className)} aria-hidden="true">&lt;AI design /&gt;</div>;
   if (["spotlight", "split", "minimal"].includes(page.template)) return <TemplateThumb id={page.template} cover={page.cover} className={className} />;
@@ -67,6 +55,8 @@ function TemplateThumb({ id, cover, className }: { id: LandingPage["template"]; 
 export function LandingPagesList() {
   const { state, update } = useCreator();
   const [del, setDel] = useState<LandingPage | null>(null);
+  const [q, setQ] = useState("");
+  const [status, setStatus] = useState("all");
   const delLeads = del ? state.leads.filter((l) => l.pageId === del.id).length : 0;
   const deletePage = (p: LandingPage) => {
     const { removed } = removeWhere(state.landingPages, (x) => x.id === p.id);
@@ -79,36 +69,56 @@ export function LandingPagesList() {
     <Button asChild>
       <Link to="/creator/landing-pages/create">
         <Plus />
-        Create landing page
+        Create new page
       </Link>
     </Button>
   );
   const published = state.landingPages.filter((p) => p.status === "published").length;
+  const needle = q.trim().toLowerCase();
+  const shown = state.landingPages.filter((p) => (status === "all" || p.status === status) && (!needle || [p.title, p.slug, templateName(p.template), p.mode === "import" ? "ai import" : ""].some((t) => t.toLowerCase().includes(needle))));
+  const totalViews = state.landingPages.reduce((n, p) => n + (p.views ?? 0), 0);
+  const overall = conversionRate(state.leads.filter((l) => state.landingPages.some((p) => p.id === l.pageId && p.views)).length, totalViews);
   return (
     <div>
       <PageHeader eyebrow="Marketing" title="Landing pages" description="Focused pages that collect leads or sell a single product." actions={create} />
       {state.landingPages.length > 0 && (
-        <div className="mb-5 grid grid-cols-3 gap-3">
-          <StatCard icon={ShoppingBag} label="Pages" value={String(state.landingPages.length)} />
-          <StatCard icon={Globe} label="Published" value={String(published)} tone="sky" />
-          <StatCard icon={Users} label="Leads" value={String(state.leads.length)} tone="lime" />
-        </div>
+        <>
+          <div className="mb-5 grid grid-cols-2 gap-3 md:grid-cols-4">
+            <StatCard icon={ShoppingBag} label="Pages" value={String(state.landingPages.length)} />
+            <StatCard icon={Globe} label="Published" value={String(published)} tone="sky" />
+            <StatCard icon={Users} label="Leads" value={String(state.leads.length)} tone="lime" />
+            <StatCard icon={Eye} label="Conversion" value={overall === null ? "—" : `${overall}%`} />
+          </div>
+          <div className="mb-4 flex flex-col gap-2 sm:flex-row">
+            <div className="relative flex-1"><Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" /><Input type="search" aria-label="Search landing pages" placeholder="Search landing pages" value={q} onChange={(e) => setQ(e.target.value)} className="pl-10" /></div>
+            <FilterSelect label="Status" value={status} onChange={setStatus} options={[["all", "All pages"], ["published", "Published"], ["draft", "Drafts"]]} />
+          </div>
+        </>
       )}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        {state.landingPages.map((p) => {
+        {shown.map((p) => {
           const leads = state.leads.filter((l) => l.pageId === p.id).length;
+          const buyers = p.itemId ? new Set(state.orders.filter((o) => o.itemId === p.itemId && o.status === "paid").map((o) => o.customerId)).size : null;
+          const rate = conversionRate(leads, p.views);
+          const url = pageUrl(state.storefront.handle, p.slug);
           return (
             <article key={p.id} className="product-card surface group flex flex-col overflow-hidden hover:-translate-y-0.5 hover:border-cobalt-100 hover:shadow-lift">
-              <Link to="/creator/landing-pages/$pageId/edit" params={{ pageId: p.id }} className="block bg-soft p-3" aria-label={`Edit ${p.title}`}>
-                <TemplateThumb id={p.template} cover={p.cover} className="aspect-[16/10] w-full" />
+              <Link to="/creator/landing-pages/$pageId/edit" params={{ pageId: p.id }} className="relative block bg-soft p-3" aria-label={`Edit ${p.title}`}>
+                <PageThumb page={p} className="aspect-[16/10] w-full" />
+                <span className={cn("absolute left-5 top-5 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-extrabold shadow-sm", p.status === "published" ? "bg-success-soft text-success" : "bg-card text-muted-foreground")}><span className={cn("h-1.5 w-1.5 rounded-full", p.status === "published" ? "bg-success" : "bg-muted-foreground")} />{p.status === "published" ? "Live" : "Draft"}</span>
               </Link>
               <div className="flex flex-1 flex-col p-4">
                 <div className="flex items-start justify-between gap-3">
                   <h2 className="min-w-0 truncate text-base">{p.title}</h2>
                   <ItemStatus status={p.status} />
                 </div>
-                <p className="mt-1 truncate text-xs text-muted-foreground">{pageUrl(state.storefront.handle, p.slug)}</p>
-                <p className="mt-2 text-xs font-semibold text-muted-foreground">{templates.find((t) => t.id === p.template)?.name} · {leads} lead{leads === 1 ? "" : "s"} · Updated {shortDate(p.date)}</p>
+                <button type="button" onClick={() => copyText(url)} className="mt-1 truncate text-left text-xs text-sky-text hover:underline" aria-label={`Copy link ${url}`}>{url}</button>
+                <dl className="mt-3 grid grid-cols-4 gap-1.5 text-center">
+                  {[["Views", p.views === undefined ? "—" : String(p.views)], ["Leads", String(leads)], ["Conv.", rate === null ? "—" : `${rate}%`], ["Buyers", buyers === null ? "—" : String(buyers)]].map(([k, v]) => (
+                    <div key={k} className="rounded-[12px] bg-soft px-1 py-2"><dd className="text-sm font-extrabold">{v}</dd><dt className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">{k}</dt></div>
+                  ))}
+                </dl>
+                <p className="mt-3 text-xs font-semibold text-muted-foreground">{p.mode === "import" ? "AI-designed import" : `${templateName(p.template)}${["spotlight", "split", "minimal"].includes(p.template) ? "" : ` · ${p.variation.toUpperCase()}`}`} · Updated {shortDate(p.date)}</p>
                 <div className="mt-auto flex flex-wrap gap-2 border-t pt-3.5">
                   <Button asChild size="sm" variant="outline">
                     <Link to="/creator/landing-pages/$pageId/edit" params={{ pageId: p.id }}><Pencil />Edit</Link>
@@ -117,9 +127,9 @@ export function LandingPagesList() {
                     <Link to="/creator/landing-pages/$pageId/leads" params={{ pageId: p.id }}><Users />Leads</Link>
                   </Button>
                   <Button size="sm" variant="ghost" onClick={() => {
-                    const status = p.status === "published" ? "draft" : "published";
-                    update((s) => ({ landingPages: s.landingPages.map((x) => (x.id === p.id ? { ...x, status } : x)) }));
-                    toast.success(status === "published" ? "Page published" : "Page unpublished");
+                    const next = p.status === "published" ? "draft" : "published";
+                    update((s) => ({ landingPages: s.landingPages.map((x) => (x.id === p.id ? { ...x, status: next } : x)) }));
+                    toast.success(next === "published" ? "Page published" : "Page unpublished");
                   }}>{p.status === "published" ? "Unpublish" : "Publish"}</Button>
                   <Button size="sm" variant="ghost" className="ml-auto h-9 w-9 px-0 text-muted-foreground hover:text-destructive" aria-label={`Delete ${p.title}`} onClick={() => setDel(p)}><Trash2 /></Button>
                 </div>
@@ -128,6 +138,7 @@ export function LandingPagesList() {
           );
         })}
       </div>
+      {state.landingPages.length > 0 && !shown.length && <EmptyState icon={Search} title="No pages match" description="Try another word or show all pages." compact />}
       <ConfirmDialog
         open={!!del}
         onOpenChange={(o) => !o && setDel(null)}
@@ -143,12 +154,7 @@ export function LandingPagesList() {
       </ConfirmDialog>
       {!state.landingPages.length && (
         <section className="surface overflow-hidden">
-          <EmptyState icon={ShoppingBag} title="No landing pages yet" description="Pick a template, add your images and words, and publish in minutes." action={create} />
-          <div className="mx-auto grid max-w-2xl grid-cols-3 gap-3 px-5 pb-10">
-            {templates.map((t) => (
-              <div key={t.id} className="text-center"><TemplateThumb id={t.id} className="aspect-[4/3] w-full" /><p className="mt-2 text-xs font-extrabold">{t.name}</p></div>
-            ))}
-          </div>
+          <EmptyState icon={ShoppingBag} title="No landing pages yet" description="Build from a template or import an AI-designed page, then publish in minutes." action={create} />
         </section>
       )}
     </div>
