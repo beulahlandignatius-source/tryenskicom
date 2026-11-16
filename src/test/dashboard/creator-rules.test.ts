@@ -60,6 +60,11 @@ describe("New Creator account", () => {
     expect(initialCreatorState.universe.demoEligibleEarningsUsd).toBe(0);
   });
   it("is a valid stored record", () => expect(stateSchema.safeParse(initialCreatorState).success).toBe(true));
+  it("keeps affiliate usernames optional so existing affiliate records still load", () => {
+    const affiliate = { id: "a", name: "Ada Obi", email: "ada@example.com", status: "active", date: "2026-11-16" };
+    expect(stateSchema.parse({ ...initialCreatorState, affiliates: [affiliate] }).affiliates[0]?.username).toBeUndefined();
+    expect(stateSchema.parse({ ...initialCreatorState, affiliates: [{ ...affiliate, username: "ada.ob" }] }).affiliates[0]?.username).toBe("ada.ob");
+  });
 });
 describe("Creator product rules", () => {
   it("requires titles and descriptions", () => expect(validateItem({ ...item, title: "" })).not.toBe(""));

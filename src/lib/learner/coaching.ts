@@ -5,7 +5,7 @@ export type CoachingAppointment = LearnerState["coachingAppointments"][number];
 
 /** Recurring demo appointment options; these never contact a creator or reserve a real calendar. */
 export function coachingSlots(appointments: CoachingAppointment[], resourceId: string, now = new Date(), limit = 12) {
-  const taken = new Set(appointments.filter((a) => a.status === "confirmed").map((a) => a.scheduledAt));
+  const taken = new Set(appointments.filter((a) => a.resourceId === resourceId && a.status === "confirmed").map((a) => a.scheduledAt));
   const slots: string[] = [];
   for (let offset = 1; offset <= 21 && slots.length < limit; offset += 1) {
     const day = new Date(now.getFullYear(), now.getMonth(), now.getDate() + offset);

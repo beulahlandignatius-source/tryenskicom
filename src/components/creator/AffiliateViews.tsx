@@ -90,6 +90,7 @@ export function AffiliatesPage() {
   const [invite, setInvite] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [error, setError] = useState("");
 
   const active = state.affiliates.filter((a) => a.status === "active").length;
@@ -98,7 +99,7 @@ export function AffiliatesPage() {
 
   const list = useMemo(() => {
     const rows = state.affiliates.filter((a) =>
-      (a.name + a.email + referralCode(a)).toLowerCase().includes(q.trim().toLowerCase()) && (status === "all" || a.status === status) && inRange(a.date, range));
+      (a.name + a.email + (a.username ?? "") + referralCode(a)).toLowerCase().includes(q.trim().toLowerCase()) && (status === "all" || a.status === status) && inRange(a.date, range));
     return [...rows].sort((a, b) => sort === "name" ? a.name.localeCompare(b.name) : sort === "oldest" ? a.date.localeCompare(b.date) : b.date.localeCompare(a.date));
   }, [state.affiliates, q, status, range, sort]);
   const pg = paginate(list, page);
@@ -183,7 +184,7 @@ export function AffiliatesPage() {
                 <Link to="/creator/affiliates/$affiliateId" params={{ affiliateId: a.id }} className="flex flex-col gap-3 px-5 py-4 text-sm transition-colors hover:bg-soft/70 sm:flex-row sm:items-center">
                   <span className="flex min-w-0 flex-1 items-center gap-3">
                     <span className={cn("grid h-10 w-10 shrink-0 place-items-center rounded-full text-sm font-extrabold", a.status === "suspended" ? "bg-soft text-muted-foreground" : "bg-ice text-cobalt")} aria-hidden="true">{initials(a.name)}</span>
-                    <span className="min-w-0"><span className="block truncate font-bold">{a.name}</span><span className="block truncate text-xs text-muted-foreground">{a.email} · Since {shortDate(a.date)}</span></span>
+                    <span className="min-w-0"><span className="block truncate font-bold">{a.name}{a.username && <span className="ml-1.5 text-xs font-semibold text-cobalt">@{a.username.replace(/^@/, "")}</span>}</span><span className="block truncate text-xs text-muted-foreground">{a.email} · Since {shortDate(a.date)}</span></span>
                   </span>
                   <span className="flex flex-wrap items-center gap-2 pl-[52px] sm:pl-0">
                     <code className="rounded bg-soft px-1.5 py-0.5 text-[11px] font-bold">{referralCode(a)}</code>
@@ -235,12 +236,16 @@ export function AffiliatesPage() {
             if (!name.trim()) return setError("Enter their name.");
             if (!isEmail(email)) return setError("Enter a valid email address.");
             if (state.affiliates.some((a) => a.email.toLowerCase() === email.trim().toLowerCase())) return setError("This person has already been invited.");
-            update((s) => ({ affiliates: [...s.affiliates, { id: crypto.randomUUID(), name: name.trim(), email: email.trim(), status: "invited", date: new Date().toISOString() }], activity: [...s.activity, activityEntry(`Affiliate invited: ${name.trim()}`)] }));
-            setInvite(false); setName(""); setEmail("");
+            const cleanUsername = username.trim().replace(/^@/, "");
+            if (cleanUsername && !/^[a-z0-9._-]{2,30}$/i.test(cleanUsername)) return setError("Use 2–30 letters, numbers, dots, underscores or hyphens for the username.");
+            if (cleanUsername && state.affiliates.some((affiliate) => affiliate.username?.toLowerCase() === cleanUsername.toLowerCase())) return setError("That username is already in your affiliate list.");
+            update((s) => ({ affiliates: [...s.affiliates, { id: crypto.randomUUID(), name: name.trim(), email: email.trim(), ...(cleanUsername ? { username: cleanUsername } : {}), status: "invited", date: new Date().toISOString() }], activity: [...s.activity, activityEntry(`Affiliate invited: ${name.trim()}`)] }));
+            setInvite(false); setName(""); setEmail(""); setUsername("");
             toast.success("Affiliate added as invited", { description: "Sending invitation emails needs backend support." });
           }}>
             <Field id="aff-name" label="Name"><Input id="aff-name" value={name} onChange={(e) => setName(e.target.value)} /></Field>
             <Field id="aff-email" label="Email"><Input id="aff-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} /></Field>
+            <Field id="aff-username" label="Username (optional)" hint="Shown as @username in your affiliate list."><Input id="aff-username" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="e.g. ada.creates" autoCapitalize="none" /></Field>
             {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
             <DialogActions><Button type="submit">Add affiliate</Button></DialogActions>
           </form>
@@ -280,6 +285,7 @@ export function AffiliateDetails({ id }: { id: string }) {
           <div className="flex flex-wrap items-center gap-2"><AccountBadge status={a.status} /><span className="text-xs text-muted-foreground">Member since {shortDate(a.date)}</span></div>
           <div className="flex flex-wrap items-center gap-2 text-sm">
             <span className="text-muted-foreground">Referral code</span><code className="rounded bg-soft px-2 py-0.5 font-bold">{code}</code>
+            {a.username && <span className="rounded-full bg-ice px-2.5 py-1 text-xs font-bold text-cobalt">@{a.username.replace(/^@/, "")}</span>}
             <Button size="sm" variant="ghost" onClick={() => copyText(code)} aria-label="Copy referral code"><Copy /></Button>
           </div>
         </div>
