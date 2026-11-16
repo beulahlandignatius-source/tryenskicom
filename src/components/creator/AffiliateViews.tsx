@@ -17,7 +17,7 @@ import { removeWhere, restoreAt, sameId } from "@/lib/shared/listUndo";
 import { undoToast } from "@/lib/shared/undo";
 import { activityEntry, useCreator } from "@/lib/creator/store";
 import { isEmail, saveRule, validateRule, type Affiliate, type CommissionRule, type ItemKind } from "@/lib/creator/rules";
-import { COMMISSION_CATEGORIES, SOURCE_LABEL, categoryLabel, categoryRateError, paginate, referralCode, resolveRate, type RateSource } from "@/lib/creator/affiliates";
+import { COMMISSION_CATEGORIES, SOURCE_LABEL, affiliateSearchableText, categoryLabel, categoryRateError, paginate, referralCode, resolveRate, type RateSource } from "@/lib/creator/affiliates";
 import { formatMoney } from "@/lib/shared/finance/currencies";
 import { CreatorNotFound, copyText, shortDate } from "./shared";
 import { AffiliateTabs } from "./Affiliates";
@@ -99,7 +99,7 @@ export function AffiliatesPage() {
 
   const list = useMemo(() => {
     const rows = state.affiliates.filter((a) =>
-      (a.name + a.email + (a.username ?? "") + referralCode(a)).toLowerCase().includes(q.trim().toLowerCase()) && (status === "all" || a.status === status) && inRange(a.date, range));
+      affiliateSearchableText(a).includes(q.trim().toLowerCase()) && (status === "all" || a.status === status) && inRange(a.date, range));
     return [...rows].sort((a, b) => sort === "name" ? a.name.localeCompare(b.name) : sort === "oldest" ? a.date.localeCompare(b.date) : b.date.localeCompare(a.date));
   }, [state.affiliates, q, status, range, sort]);
   const pg = paginate(list, page);
@@ -264,6 +264,9 @@ export function AffiliateDetails({ id }: { id: string }) {
   const [rateOpen, setRateOpen] = useState(false);
   const [rate, setRate] = useState("");
   const [rateErr, setRateErr] = useState("");
+  const [usernameOpen, setUsernameOpen] = useState(false);
+  const [username, setUsername] = useState("");
+  const [usernameErr, setUsernameErr] = useState("");
   const a = state.affiliates.find((x) => x.id === id);
   if (!a) return <CreatorNotFound what="affiliate" />;
   const setAff = (patch: Partial<Affiliate>, log: string) => update((s) => ({ affiliates: s.affiliates.map((x) => (x.id === id ? { ...x, ...patch } : x)), activity: [...s.activity, activityEntry(log)] }));
@@ -285,7 +288,8 @@ export function AffiliateDetails({ id }: { id: string }) {
           <div className="flex flex-wrap items-center gap-2"><AccountBadge status={a.status} /><span className="text-xs text-muted-foreground">Member since {shortDate(a.date)}</span></div>
           <div className="flex flex-wrap items-center gap-2 text-sm">
             <span className="text-muted-foreground">Referral code</span><code className="rounded bg-soft px-2 py-0.5 font-bold">{code}</code>
-            {a.username && <span className="rounded-full bg-ice px-2.5 py-1 text-xs font-bold text-cobalt">@{a.username.replace(/^@/, "")}</span>}
+            {a.username ? <span className="rounded-full bg-ice px-2.5 py-1 text-xs font-bold text-cobalt">@{a.username.replace(/^@/, "")}</span> : <span className="text-xs text-muted-foreground">No username set</span>}
+            <Button size="sm" variant="ghost" onClick={() => { setUsername(a.username ?? ""); setUsernameErr(""); setUsernameOpen(true); }}>{a.username ? "Edit username" : "Add username"}</Button>
             <Button size="sm" variant="ghost" onClick={() => copyText(code)} aria-label="Copy referral code"><Copy /></Button>
           </div>
         </div>
@@ -340,6 +344,24 @@ export function AffiliateDetails({ id }: { id: string }) {
             <Field id="aff-rate" label="Commission (%)"><div className="relative"><Input id="aff-rate" inputMode="decimal" value={rate} onChange={(e) => { setRate(e.target.value); setRateErr(""); }} placeholder="e.g. 25" className="pr-9" aria-invalid={!!rateErr} /><span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">%</span></div></Field>
             {rateErr && <p role="alert" className="text-sm text-destructive">{rateErr}</p>}
             <DialogActions><Button type="submit">Save rate</Button></DialogActions>
+          </form>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={usernameOpen} onOpenChange={setUsernameOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Affiliate username</DialogTitle><DialogDescription>Use a public handle to make this affiliate easier to find in your list. Leave blank to remove it.</DialogDescription></DialogHeader>
+          <form className="space-y-4" noValidate onSubmit={(event) => {
+            event.preventDefault();
+            const clean = username.trim().replace(/^@/, "");
+            if (clean && !/^[a-z0-9._-]{2,30}$/i.test(clean)) return setUsernameErr("Use 2–30 letters, numbers, dots, underscores or hyphens.");
+            if (clean && state.affiliates.some((affiliate) => affiliate.id !== id && affiliate.username?.toLowerCase() === clean.toLowerCase())) return setUsernameErr("That username is already in your affiliate list.");
+            setAff({ username: clean || undefined }, `Affiliate username ${clean ? `set to @${clean}` : "removed"}: ${a.name}`);
+            setUsernameOpen(false);
+            toast.success(clean ? "Username saved" : "Username removed");
+          }}>
+            <Field id="affiliate-username" label="Username"><Input id="affiliate-username" value={username} onChange={(event) => { setUsername(event.target.value); setUsernameErr(""); }} placeholder="e.g. ada.creates" autoCapitalize="none" /></Field>
+            {usernameErr && <p role="alert" className="text-sm text-destructive">{usernameErr}</p>}
+            <DialogActions><Button type="submit">Save username</Button></DialogActions>
           </form>
         </DialogContent>
       </Dialog>
