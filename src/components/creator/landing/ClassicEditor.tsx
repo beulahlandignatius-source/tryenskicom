@@ -205,7 +205,7 @@ export function ClassicEditor({ id, thumb, preview }: { id?: string | undefined;
                 <span className="flex gap-1" aria-hidden="true"><span className="h-2 w-2 rounded-full bg-line" /><span className="h-2 w-2 rounded-full bg-line" /><span className="h-2 w-2 rounded-full bg-line" /></span>
                 <span className="min-w-0 flex-1 truncate rounded-full bg-card px-2.5 py-0.5 text-[11px] font-semibold text-muted-foreground ring-1 ring-line">{pageUrl(state.storefront.handle, form.slug || "page")}</span>
               </div>
-              <LandingPreview page={form} product={product} store={state.storefront.name || "Your store"} device={device} />
+              {preview(form, device)}
             </div>
           </div>
         </section>
