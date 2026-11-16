@@ -1918,3 +1918,9 @@ html[data-splash="off"] .splash {
 .universe-frame > section { margin-top:0 !important; }
 .universe-cta { position:relative; overflow:hidden; border-radius:var(--radius-card); background:radial-gradient(ellipse 80% 120% at 100% 0%,var(--cobalt-glow),var(--midnight) 70%); color:var(--on-dark); }
 .universe-cta::after { content:""; position:absolute; inset:0; background:radial-gradient(circle,color-mix(in oklab,var(--lime) 30%,transparent) 1px,transparent 1.5px) 0 0/16px 16px; -webkit-mask-image:linear-gradient(90deg,transparent 40%,#000); mask-image:linear-gradient(90deg,transparent 40%,#000); pointer-events:none; }
+
+/* Events page band under the featured hero. */
+.events-glance { position:relative; background:radial-gradient(ellipse 70% 120% at 0% 0%,var(--cobalt-glow),var(--cobalt) 45%,var(--midnight)); color:var(--on-dark); box-shadow:0 24px 60px -36px color-mix(in oklab,var(--cobalt) 60%,transparent); }
+.events-glance::after { content:""; position:absolute; inset:0; pointer-events:none; background:radial-gradient(circle,color-mix(in oklab,var(--lime) 28%,transparent) 1px,transparent 1.5px) 0 0/18px 18px; -webkit-mask-image:radial-gradient(60% 100% at 100% 50%,#000,transparent 75%); mask-image:radial-gradient(60% 100% at 100% 50%,#000,transparent 75%); }
+.events-filters { border-top:3px solid var(--cobalt); }
+.topic-tile[aria-pressed="true"] { box-shadow:0 12px 28px -16px color-mix(in oklab,var(--cobalt) 70%,transparent); }

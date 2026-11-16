@@ -60,6 +60,40 @@ export function EventsPage() {
       <PageHeader eyebrow="Events" title="Learn live, together" description="Workshops, live sessions and meetups hosted by Enski creators. Save a seat in a few taps." />
       {show === "live" && <FeaturedEvents list={featured} />}
 
+      <section aria-label="Events at a glance" className="events-glance mb-8 overflow-hidden rounded-[24px] p-4 sm:p-6">
+        <div className="relative z-10 flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+          <div className="min-w-0">
+            <p className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.14em] text-lime"><span className="neon-dot is-live" aria-hidden="true" />This season on Enski</p>
+            <h2 className="mt-1.5 text-xl font-extrabold text-on-dark sm:text-2xl">Find your next live session</h2>
+            <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Quick filters">
+              {([
+                ["All", () => clear(), !chips.length],
+                ["Free", () => set("price", f.price === "free" ? "any" : "free"), f.price === "free"],
+                ["This week", () => set("date", f.date === "week" ? "any" : "week"), f.date === "week"],
+                ["Online", () => set("format", f.format === "Online" ? "any" : "Online"), f.format === "Online"],
+                ["In person", () => set("format", f.format === "In person" ? "any" : "In person"), f.format === "In person"],
+              ] as const).map(([label, go, on]) => (
+                <button key={label} type="button" onClick={() => { go(); setTab("upcoming"); }} aria-pressed={on}
+                  className={cn("h-9 rounded-full px-4 text-sm font-bold transition-colors", on ? "bg-lime text-midnight" : "bg-on-dark/10 text-on-dark ring-1 ring-on-dark/20 hover:bg-on-dark/20")}>{label}</button>
+              ))}
+            </div>
+          </div>
+          <dl className="grid grid-cols-2 gap-2.5 sm:grid-cols-4 lg:w-[460px]">
+            {[
+              ["Upcoming", publishedEvents.filter((e) => !isPast(e)).length],
+              ["Free", publishedEvents.filter((e) => !isPast(e) && e.price === 0).length],
+              ["Online", publishedEvents.filter((e) => !isPast(e) && e.mode === "Online").length],
+              ["Your seats", mine.filter((e) => !isPast(e)).length],
+            ].map(([k, v]) => (
+              <div key={k} className="rounded-2xl bg-on-dark/10 p-3 ring-1 ring-on-dark/15 backdrop-blur-sm">
+                <dt className="text-[11px] font-bold uppercase tracking-wide text-on-dark-muted">{k}</dt>
+                <dd className="mt-1 text-2xl font-extrabold tabular-nums text-on-dark">{v}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      </section>
+
       <section aria-labelledby="topics-title" className="mb-8">
         <h2 id="topics-title" className="mb-3 flex items-center gap-2.5 text-lg font-extrabold"><span className="lime-tick" aria-hidden="true" />Browse by topic</h2>
         <ul className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-5">
@@ -82,7 +116,7 @@ export function EventsPage() {
         </ul>
       </section>
 
-      <section aria-label="Filter events" className="surface mb-5 p-3 sm:p-4">
+      <section aria-label="Filter events" className="surface events-filters sticky-filter mb-5 p-3 sm:p-4">
         <div className="flex flex-col gap-3 xl:flex-row xl:items-end">
           <div className="min-w-0 lg:w-72"><span className="mb-1 block text-xs font-bold text-muted-foreground" aria-hidden="true">Search</span><SearchInput value={f.q} onChange={(v) => set("q", v)} placeholder="Search events or hosts" /></div>
           <div className="grid flex-1 grid-cols-2 gap-2 sm:grid-cols-4">
