@@ -36,7 +36,7 @@ export type Booking = {
   when: string | null;
   status: BookingStatus;
   when_past: boolean;
-  href: { to: "/learner/events/$eventId"; params: { eventId: string } } | { to: "/learner/resources/$resourceId"; params: { resourceId: string } };
+  href: { to: "/learner/events/$eventId"; params: { eventId: string } } | { to: "/learner/resources/$resourceId"; params: { resourceId: string } } | { to: "/learner/session"; search: { handle: string; itemId: string; kind: "coaching" | "live" } };
   reference?: string | undefined;
   /** Only free registrations not yet attended can be cancelled. */
   cancellable: boolean;
@@ -68,7 +68,7 @@ export function learnerBookings(s: Pick<LearnerState, "purchases" | "registratio
   for (const ownedSession of s.creatorSessionBookings) {
     const current = learnerSessionBooking(ownedSession.creatorHandle, ownedSession.id) ?? ownedSession;
     const past = Date.parse(current.scheduledAt) < now;
-    out.push({ id: ownedSession.id, kind: ownedSession.kind, title: ownedSession.itemTitle, host: ownedSession.creatorName, image: ownedSession.image, when: current.scheduledAt, status: current.status === "cancelled" ? "cancelled" : current.status === "attended" ? "attended" : current.status === "completed" || current.status === "no_show" || past ? "ended" : current.status === "requested" ? "requested" : "confirmed", when_past: past, href: { to: "/learner/sessions/$handle/$itemId", params: { handle: ownedSession.creatorHandle, itemId: ownedSession.itemId } } as Booking["href"], reference: ownedSession.id.slice(0, 8).toUpperCase(), cancellable: (current.status === "requested" || current.status === "confirmed") && !past, online: ownedSession.online, meetingLink: ownedSession.meetingLink, creatorHandle: ownedSession.creatorHandle });
+    out.push({ id: ownedSession.id, kind: ownedSession.kind, title: ownedSession.itemTitle, host: ownedSession.creatorName, image: ownedSession.image, when: current.scheduledAt, status: current.status === "cancelled" ? "cancelled" : current.status === "attended" ? "attended" : current.status === "completed" || current.status === "no_show" || past ? "ended" : current.status === "requested" ? "requested" : "confirmed", when_past: past, href: { to: "/learner/session", search: { handle: ownedSession.creatorHandle, itemId: ownedSession.itemId, kind: ownedSession.kind } }, reference: ownedSession.id.slice(0, 8).toUpperCase(), cancellable: (current.status === "requested" || current.status === "confirmed") && !past, online: ownedSession.online, meetingLink: ownedSession.meetingLink, creatorHandle: ownedSession.creatorHandle });
   }
   for (const reg of s.registrations) {
     const e = findEvent(reg.eventId);
