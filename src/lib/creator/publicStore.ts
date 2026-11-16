@@ -129,15 +129,15 @@ export function creatorSessionOffers(): PublicSessionOffer[] {
 }
 
 /** Available local demo appointments for one creator's coaching offer. */
-export function creatorCoachingSlots(handle: string, itemId: string, now = new Date()) {
+export function creatorCoachingSlots(handle: string, itemId: string, now = new Date(), excludeBookingId?: string) {
   const record = readCreatorRecord(handle);
   const item = record?.state.items.find((candidate) => candidate.id === itemId && candidate.kind === "coaching" && candidate.status === "published");
   if (!record || !item) return [];
   const coaching = coachingOf(item);
-  const booked = record.state.sessionBookings.filter((booking) => booking.itemId === itemId && booking.kind === "coaching" && booking.status === "confirmed").map((booking) => booking.scheduledAt);
+  const booked = record.state.sessionBookings.filter((booking) => booking.itemId === itemId && booking.kind === "coaching" && booking.id !== excludeBookingId && booking.status !== "cancelled").map((booking) => booking.scheduledAt);
   const slots = coachingSlots(record.state.availability.days, record.state.availability.buffer, item.duration, coaching, booked, now, 30);
   if (coaching.format === "one_to_one") return slots;
-  return slots.filter((slot) => record.state.sessionBookings.filter((booking) => booking.itemId === itemId && booking.scheduledAt === slot && booking.status !== "cancelled").length < coaching.groupSize);
+  return slots.filter((slot) => record.state.sessionBookings.filter((booking) => booking.itemId === itemId && booking.id !== excludeBookingId && booking.scheduledAt === slot && booking.status !== "cancelled").length < coaching.groupSize);
 }
 
 /** Save a learner's simulated reservation to the matching creator account. */

@@ -85,6 +85,21 @@ export function bookingRows(s: Pick<CreatorState, "items" | "orders" | "customer
       }
     }
   }
+  const sessionState = s as Pick<CreatorState, "items" | "orders" | "customers"> & Partial<Pick<CreatorState, "sessionBookings">>;
+  for (const booking of sessionState.sessionBookings ?? []) {
+    const item = items.find((candidate) => candidate.id === booking.itemId);
+    if (!item) continue;
+    const past = Date.parse(booking.scheduledAt) < now;
+    const labels = {
+      requested: { label: "Booking request", tone: "warn" as const, action: "Confirm or decline the request" },
+      confirmed: { label: past ? "Needs outcome" : "Confirmed", tone: past ? "warn" as const : "info" as const, action: past ? "Mark attended or no-show" : null },
+      cancelled: { label: "Cancelled", tone: "muted" as const, action: null },
+      completed: { label: "Completed", tone: "success" as const, action: null },
+      no_show: { label: "No-show", tone: "muted" as const, action: null },
+      attended: { label: "Attended", tone: "success" as const, action: null },
+    }[booking.status];
+    rows.push({ id: booking.id, kind: booking.kind, item, who: booking.learnerName, when: booking.scheduledAt, ...labels, amount: 0 });
+  }
   return rows;
 }
 

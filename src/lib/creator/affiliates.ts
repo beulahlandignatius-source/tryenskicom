@@ -50,3 +50,6 @@ export function paginate<T>(rows: T[], page: number, size = 10) {
 /** Referral code shown for an affiliate, stable per record. */
 export const referralCode = (a: Pick<Affiliate, "id" | "name">) =>
   `${(a.name.replace(/[^a-z]/gi, "").slice(0, 4) || "ENSK").toUpperCase()}-${a.id.replace(/-/g, "").slice(0, 4).toUpperCase()}`;
+
+export const affiliateSearchableText = (a: Pick<Affiliate, "id" | "name" | "email" | "username">) =>
+  `${a.name} ${a.email} ${a.username ?? ""} ${referralCode(a)}`.toLowerCase();
