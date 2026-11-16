@@ -16,7 +16,7 @@ import {
   stateSchema,
   type CreatorItem,
   type Promotion,
-  type LandingPage, creatorBalances, currencyPayoutError } from "@/lib/creator/rules";
+  type LandingPage, landingSchema, creatorBalances, currencyPayoutError } from "@/lib/creator/rules";
 const item: CreatorItem = {
   id: "toolkit",
   kind: "ebook",
