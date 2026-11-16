@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/dashboard
 import { EmptyState, EmptyTable, FilterSelect, PageHeader, Panel, StatCard, dateRanges } from "@/components/affiliate/ui";
 import { meta } from "@/lib/affiliate/meta";
 import { useAffiliate } from "@/lib/affiliate/store";
-import { affiliateBalances } from "@/lib/affiliate/rules";
+import { prototypeBalances } from "@/lib/affiliate/rules";
 import { naira } from "@/lib/affiliate/products";
 import { products } from "@/lib/affiliate/products";
 import { TrendBars, ShareDonut, periodBuckets } from "@/components/shared/charts/DashCharts";
@@ -19,7 +19,7 @@ export const Route = createFileRoute("/affiliate/performance")({
 
 function Performance() {
   const { state } = useAffiliate();
-  const bal = affiliateBalances(state);
+  const bal = prototypeBalances;
   const promoted = products.filter((p) => state.joined.includes(p.id));
   const [range, setRange] = useState("30");
   const [metric, setMetric] = useState("clicks");
