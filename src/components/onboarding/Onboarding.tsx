@@ -455,7 +455,7 @@ const TOOLS: Tool[] = [
   { icon: Package, title: "Products & storefront", text: "Courses and eBooks built step by step, on one page you can share anywhere." },
   { icon: Presentation, title: "Live training & coaching", text: "Schedule workshops and 1:1 or group coaching that learners can book." },
   { icon: BadgeCheck, title: "Certificates & badges", text: "Your logo and signature on every certificate learners earn." },
-  { icon: Wallet, title: "Wallet & payouts", text: "Track sales and withdraw to your bank, card or PayPal." },
+  { icon: Wallet, title: "Wallet & payouts", text: "Track sales and withdraw to your bank, mobile money, a bank abroad or PayPal." },
 ];
 const FIRST_MAKE = ["A course", "An eBook", "Coaching", "Live training"] as const;
 
@@ -533,7 +533,38 @@ function ReferralsStep({ ctx }: { ctx: Ctx }) {
   );
 }
 
-const PAYOUTS = ["Bank transfer", "Card", "PayPal"] as const;
+/** Payout rails Enski supports today (see lib/shared/finance/coverage). */
+const PAYOUTS = [
+  { id: "Local bank transfer", by: "Paystack", d: "Nigerian commercial and microfinance banks, in naira." },
+  { id: "Mobile money", by: "Flutterwave", d: "Ghana, Kenya, Uganda and other supported wallets." },
+  { id: "International bank", by: "Wise", d: "USD, GBP and EUR accounts abroad." },
+  { id: "PayPal", by: "PayPal", d: "Dollar payouts to your PayPal email." },
+] as const;
+function PayoutPicker({ value, onChange }: { value: string | undefined; onChange: (v: string) => void }) {
+  return (
+    <fieldset>
+      <legend className="mb-2.5 text-sm font-extrabold text-ink">How would you like to be paid? (optional)</legend>
+      <div role="radiogroup" aria-label="Payout method" className="grid gap-2.5 sm:grid-cols-2">
+        {PAYOUTS.map((o) => {
+          const on = value === o.id;
+          return (
+            <button key={o.id} type="button" role="radio" aria-checked={on} onClick={() => onChange(o.id)}
+              className={cn("flex items-start gap-3 rounded-[16px] border-[1.5px] p-4 text-left transition-colors", on ? "border-cobalt bg-ice ring-4 ring-cobalt/10" : "border-line bg-card hover:border-sky")}>
+              <span className={cn("grid size-10 shrink-0 place-items-center rounded-xl", on ? "bg-cobalt text-primary-foreground" : "bg-soft text-cobalt")}>
+                {o.id === "PayPal" ? <CreditCard className="size-5" aria-hidden="true" /> : o.id === "Mobile money" ? <Wallet className="size-5" aria-hidden="true" /> : <Landmark className="size-5" aria-hidden="true" />}
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="flex items-center justify-between gap-2"><span className="font-extrabold text-ink">{o.id}</span>{on && <Check className="size-4 text-cobalt" aria-hidden="true" />}</span>
+                <span className="mt-0.5 block text-xs font-bold text-cobalt">via {o.by}</span>
+                <span className="mt-1 block text-[13px] leading-snug text-muted-foreground">{o.d}</span>
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </fieldset>
+  );
+}
 function EarningsStep({ ctx }: { ctx: Ctx }) {
   const [payout, setPayout] = useState(ctx.answers.payout);
   return (
@@ -551,7 +582,7 @@ function EarningsStep({ ctx }: { ctx: Ctx }) {
           </li>
         ))}
       </ol>
-      <Choice label="How would you like to be paid? (optional)" options={PAYOUTS} value={payout} onChange={setPayout} />
+      <PayoutPicker value={payout} onChange={setPayout} />
       <p className="flex items-start gap-2 rounded-[16px] bg-soft p-4 text-sm text-muted-foreground"><CreditCard className="mt-0.5 size-4 shrink-0 text-cobalt" aria-hidden="true" />You'll add the account details from your dashboard when you're ready to withdraw.</p>
     </StepFrame>
   );
