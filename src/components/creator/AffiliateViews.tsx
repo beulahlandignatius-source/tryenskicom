@@ -39,7 +39,7 @@ export function SourceBadge({ source }: { source: RateSource }) {
   return <span className={cn("inline-flex whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-extrabold", SOURCE_TONE[source])}>{SOURCE_LABEL[source]}</span>;
 }
 
-function Stat({ label, value, hint, icon: Icon }: { label: string; value: ReactNode; hint?: string; icon: typeof Users }) {
+function Stat({ label, value, hint, icon: Icon }: { label: string; value: ReactNode; hint?: string | undefined; icon: typeof Users }) {
   return (
     <div className="surface flex flex-col gap-2 p-4">
       <span className="flex items-center gap-2 text-xs font-bold text-muted-foreground"><Icon className="h-4 w-4 text-cobalt" aria-hidden="true" />{label}</span>
