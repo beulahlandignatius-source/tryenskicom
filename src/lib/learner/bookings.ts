@@ -56,10 +56,8 @@ export function learnerBookings(s: Pick<LearnerState, "purchases" | "registratio
     out.push({ id: appointment.id, kind: "coaching", title: resource.title, host: resource.creator, image: resource.image, when: appointment.scheduledAt, status: appointment.status === "cancelled" ? "cancelled" : appointment.status === "completed" || past ? "ended" : "confirmed", when_past: past, href: { to: "/learner/resources/$resourceId", params: { resourceId: resource.id } }, cancellable: appointment.status === "confirmed" && !past, online: true });
   }
   for (const ownedSession of s.creatorSessionBookings) {
-    const store = findCreatorOffer(ownedSession.creatorHandle, ownedSession.itemId);
-    if (!store) continue;
     const past = Date.parse(ownedSession.scheduledAt) < now;
-    out.push({ id: ownedSession.id, kind: ownedSession.kind, title: store.item.title, host: store.owner, image: store.item.image, when: ownedSession.scheduledAt, status: ownedSession.status === "cancelled" ? "cancelled" : ownedSession.status === "attended" ? "attended" : ownedSession.status === "completed" || ownedSession.status === "no_show" || past ? "ended" : ownedSession.status === "requested" ? "requested" : "confirmed", when_past: past, href: { to: ownedSession.kind === "live" ? "/learner/sessions/$handle/$itemId" : "/learner/coaching/$handle/$itemId", params: { handle: ownedSession.creatorHandle, itemId: ownedSession.itemId } } as Booking["href"], reference: ownedSession.id.slice(0, 8).toUpperCase(), cancellable: (ownedSession.status === "requested" || ownedSession.status === "confirmed") && !past, online: ownedSession.kind === "live" ? store.item.live?.venue !== "in_person" : store.item.coaching?.location === "video", meetingLink: ownedSession.kind === "live" ? store.item.live?.link : store.item.coaching?.meetingLink });
+    out.push({ id: ownedSession.id, kind: ownedSession.kind, title: ownedSession.itemTitle, host: ownedSession.creatorName, image: ownedSession.image, when: ownedSession.scheduledAt, status: ownedSession.status === "cancelled" ? "cancelled" : ownedSession.status === "attended" ? "attended" : ownedSession.status === "completed" || ownedSession.status === "no_show" || past ? "ended" : ownedSession.status === "requested" ? "requested" : "confirmed", when_past: past, href: { to: ownedSession.kind === "live" ? "/learner/sessions/$handle/$itemId" : "/learner/coaching/$handle/$itemId", params: { handle: ownedSession.creatorHandle, itemId: ownedSession.itemId } } as Booking["href"], reference: ownedSession.id.slice(0, 8).toUpperCase(), cancellable: (ownedSession.status === "requested" || ownedSession.status === "confirmed") && !past, online: ownedSession.online, meetingLink: ownedSession.meetingLink });
   }
   for (const reg of s.registrations) {
     const e = findEvent(reg.eventId);
@@ -68,14 +66,4 @@ export function learnerBookings(s: Pick<LearnerState, "purchases" | "registratio
     out.push({ id: `e-${e.id}`, kind: "live", title: e.title, host: e.host, image: e.image, when: e.start, status: reg.cancelledAt ? "cancelled" : reg.attendedAt ? "attended" : past ? "ended" : "confirmed", when_past: past || !!reg.attendedAt || !!reg.cancelledAt, href: { to: "/learner/events/$eventId", params: { eventId: e.id } }, reference: reg.reference, cancellable: !reg.cancelledAt && e.price === 0 && !reg.attendedAt && !past, online: e.mode === "Online" });
   }
   return out.sort((a, b) => (a.when ?? "9").localeCompare(b.when ?? "9"));
-}
-
-function findCreatorOffer(handle: string, itemId: string) {
-  if (typeof window === "undefined") return null;
-  try {
-    const stores = JSON.parse(window.localStorage.getItem("enski:creator-session-offers") ?? "[]") as { handle: string; owner: string; item: import("@/lib/creator/rules").CreatorItem }[];
-    return stores.find((offer) => offer.handle === handle && offer.item.id === itemId) ?? null;
-  } catch {
-    return null;
-  }
 }

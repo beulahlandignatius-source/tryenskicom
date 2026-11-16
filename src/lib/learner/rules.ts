@@ -19,7 +19,7 @@ export const stateSchema = z.object({
   registrations: z.array(z.object({ eventId: z.string(), date: z.string(), tickets: z.number().int().min(1), attendedAt: z.string().optional(), cancelledAt: z.string().optional(), name: z.string().optional(), email: z.string().optional(), phone: z.string().optional(), reference: z.string().optional() })).default([]),
   /** Creator coaching and live-session reservations; kept separate from event tickets and purchases. */
   creatorSessionBookings: z.array(z.object({
-    id: z.string(), creatorHandle: z.string(), itemId: z.string(), kind: z.enum(["coaching", "live"]), scheduledAt: z.string(), createdAt: z.string(),
+    id: z.string(), creatorHandle: z.string(), itemId: z.string(), kind: z.enum(["coaching", "live"]), scheduledAt: z.string(), createdAt: z.string(), itemTitle: z.string().default("Session"), creatorName: z.string().default("Creator"), image: z.string().default(""), online: z.boolean().default(true), meetingLink: z.string().default(""),
     status: z.enum(["requested", "confirmed", "cancelled", "completed", "no_show", "attended"]),
   })).default([]),
   /** Coaching sessions from the published sample catalogue, separate from creator-owned offers. */

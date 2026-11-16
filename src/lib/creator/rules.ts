@@ -151,6 +151,11 @@ const sessionBookingSchema = z.object({
   scheduledAt: z.string(),
   createdAt: z.string(),
   status: z.enum(["requested", "confirmed", "cancelled", "completed", "no_show", "attended"]),
+  itemTitle: z.string().optional(),
+  creatorName: z.string().optional(),
+  image: z.string().optional(),
+  online: z.boolean().optional(),
+  meetingLink: z.string().optional(),
 });
 export type SessionBooking = z.infer<typeof sessionBookingSchema>;
 const ruleSchema = z.object({

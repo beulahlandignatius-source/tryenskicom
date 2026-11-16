@@ -162,6 +162,11 @@ export function reserveCreatorSession(handle: string, itemId: string, learner: {
     scheduledAt,
     createdAt: new Date(now).toISOString(),
     status: "requested",
+    itemTitle: item.title,
+    creatorName: record.state.storefront.name || record.state.profile.firstName || "Creator",
+    image: item.image,
+    online: item.kind === "live" ? liveOf(item).venue === "online" : coachingOf(item).location === "video",
+    meetingLink: item.kind === "live" ? liveOf(item).link : coachingOf(item).meetingLink,
   };
   const customers = record.state.customers.some((customer) => customer.email.toLowerCase() === booking.learnerEmail)
     ? record.state.customers
