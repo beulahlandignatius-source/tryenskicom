@@ -383,9 +383,9 @@ export function UniversePage() {
 function UniverseRibbon() {
   const { progress: p } = useUniverse();
   const tiles = [
-    { label: "Current level", value: p.level ? `Level ${p.level}` : "Starter", sub: p.current?.name ?? "Before Spark" },
+    { label: "Current level", value: p.level ? `Level ${p.level}` : "Starter", sub: p.current?.title ?? "Before Spark" },
     { label: "Chapters unlocked", value: `${p.unlocked.length} of ${MILESTONES.length}`, sub: "Each one evolves your character" },
-    { label: "Next milestone", value: p.next?.name ?? "All unlocked", sub: p.next ? `At ${usd(p.next.threshold)}` : "You reached the top" },
+    { label: "Next milestone", value: p.next?.title ?? "All unlocked", sub: p.next ? `At ${usd(p.next.threshold)}` : "You reached the top" },
   ];
   return (
     <section aria-label="Your progress" className="mt-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
@@ -398,7 +398,7 @@ function UniverseRibbon() {
         </div>
       ))}
       <div className="stat-card is-featured surface relative col-span-2 min-w-0 overflow-hidden p-4 sm:p-5 lg:col-span-1">
-        <p className="text-xs font-semibold text-muted-foreground">Progress to {p.next?.name ?? "the top"}</p>
+        <p className="text-xs font-semibold text-muted-foreground">Progress to {p.next?.title ?? "the top"}</p>
         <p className="mt-2 text-lg font-extrabold tabular-nums sm:text-2xl">{Math.round(p.percent)}%</p>
         <div className="mt-2 h-2 overflow-hidden rounded-full bg-soft" role="progressbar" aria-valuenow={Math.round(p.percent)} aria-valuemin={0} aria-valuemax={100} aria-label="Progress to next milestone">
           <div className="h-full rounded-full bg-gradient-to-r from-cobalt via-sky to-lime" style={{ width: `${p.percent}%` }} />
