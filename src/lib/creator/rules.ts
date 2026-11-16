@@ -416,10 +416,11 @@ export function validateLanding(p: LandingPage, pages: LandingPage[]) {
   if (pages.some((x) => x.id !== p.id && x.slug === p.slug))
     return "Another landing page already uses this address.";
   if (p.mode !== "import" && !p.cta.trim()) return "Add a button label.";
-  if (p.form.questions.some((q) => !q.label.trim())) return "Give every registration question a label, or remove it.";
-  if (p.form.questions.some((q) => ["dropdown", "single", "multiple"].includes(q.type) && q.options.filter((o) => o.trim()).length < 2)) return "Choice questions need at least two options.";
-  if (p.form.after === "url" && !/^https?:\/\/[^\s.]+\.[^\s]+$/.test(p.form.redirectUrl.trim())) return "Enter a full web address starting with https:// for the redirect.";
-  if (p.form.after === "product" && !p.form.redirectItemId) return "Choose which product to send people to.";
+  const form = (p.form as LandingPage["form"] | undefined) ?? { questions: [], after: "thanks", redirectUrl: "", redirectItemId: "" };
+  if (form.questions.some((q) => !q.label.trim())) return "Give every registration question a label, or remove it.";
+  if (form.questions.some((q) => ["dropdown", "single", "multiple"].includes(q.type) && q.options.filter((o) => o.trim()).length < 2)) return "Choice questions need at least two options.";
+  if (form.after === "url" && !/^https?:\/\/[^\s.]+\.[^\s]+$/.test(form.redirectUrl.trim())) return "Enter a full web address starting with https:// for the redirect.";
+  if (form.after === "product" && !form.redirectItemId) return "Choose which product to send people to.";
   if (p.sections.some((x) => !x.title.trim())) return "Give every section a title, or remove it.";
   return "";
 }
