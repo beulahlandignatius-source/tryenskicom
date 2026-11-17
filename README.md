@@ -76,9 +76,14 @@ The product documentation captures the problem framing, target users, requiremen
 - [Decision log](docs/product/decision-log.md)
 - [Roadmap](docs/product/roadmap.md)
 
-## Screenshots and walkthroughs
+## Product case study and visual evidence
 
-Screenshots and annotated flows will be added here as reviewed product artefacts. They should show the current application, use consistent crops and captions, and avoid presenting planned or simulated functionality as live.
+- [Read the Enski product case study](docs/case-study/README.md)
+- [Explore the design system](docs/design/design-system.md)
+- [Review the route and feature inventory](docs/research/feature-inventory.md)
+- [See the screenshot capture guide](docs/screenshots/README.md)
+
+Screenshots should be current captures of the deployed application, with consistent crops, viewport labels and captions. Do not present planned or simulated functionality as live.
 
 Suggested walkthroughs:
 - Learner: discover a resource → view details → continue learning
