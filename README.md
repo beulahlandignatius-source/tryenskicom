@@ -79,6 +79,7 @@ The product documentation captures the problem framing, target users, requiremen
 ## Product case study and visual evidence
 
 - [Read the Enski product case study](docs/case-study/README.md)
+- [Explore the AI-assisted product thinking and prompt-led workflow](docs/case-study/ai-assisted-product-thinking.md)
 - [Explore the design system](docs/design/design-system.md)
 - [Review the route and feature inventory](docs/research/feature-inventory.md)
 - [See the screenshot capture guide](docs/screenshots/README.md)
