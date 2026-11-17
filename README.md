@@ -71,7 +71,7 @@ npm run dev
 
 Live Preview
 
-"Visit Enski" (https://eenski.lovable.app)
+"Visit Enski" (https://tryenski.lovable.app)
 
 Disclaimer
 
