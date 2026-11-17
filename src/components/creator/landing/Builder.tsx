@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Check, Code2, Eye, LayoutTemplate, Monitor, Plus, Save, Send, Smartphone, Tablet, Trash2, AlertTriangle, Sparkles } from "lucide-react";
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Check, Code2, Eye, LayoutTemplate, Monitor, Plus, Save, Send, Smartphone, Tablet, Trash2, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/dashboard-ui/button";
 import { Input } from "@/components/dashboard-ui/input";
@@ -75,7 +75,7 @@ function BuildChoice({ onPick, classic }: { onPick: (m: LandingPage["mode"] | "c
               </div>
             ))}
           </div>
-          <div className="p-5"><p className="flex items-center gap-2 text-lg font-extrabold"><Sparkles className="h-5 w-5 text-cobalt" />Enski special</p><p className="mt-1 text-sm text-muted-foreground">The original Enski builder: pick Spotlight, Split or Minimal, then edit design, content, sections and settings in four simple tabs.</p></div>
+          <div className="p-5"><p className="flex items-center gap-2 text-lg font-extrabold"><LayoutTemplate className="h-5 w-5 text-cobalt" />Enski special</p><p className="mt-1 text-sm text-muted-foreground">The original Enski builder: pick Spotlight, Split or Minimal, then edit design, content, sections and settings in four simple tabs.</p></div>
         </button>
       )}
       <div className="mt-4 grid gap-4 md:grid-cols-2">
@@ -91,7 +91,7 @@ function BuildChoice({ onPick, classic }: { onPick: (m: LandingPage["mode"] | "c
           <div data-surface="dark" className="bg-brand-panel grid h-[214px] place-items-center p-4 text-on-dark">
             <div className="w-full max-w-xs rounded-[14px] bg-midnight/60 p-4 font-mono text-[11px] leading-5 text-on-dark-muted ring-1 ring-on-dark/20"><span className="text-lime">&lt;section&gt;</span><br />&nbsp;&nbsp;&lt;h1&gt;Your AI design&lt;/h1&gt;<br />&nbsp;&nbsp;&lt;button&gt;Join&lt;/button&gt;<br /><span className="text-lime">&lt;/section&gt;</span></div>
           </div>
-          <div className="p-5"><p className="flex items-center gap-2 text-lg font-extrabold"><Sparkles className="h-5 w-5 text-cobalt" />Import an AI-designed page</p><p className="mt-1 text-sm text-muted-foreground">Paste a page made with an AI tool and publish it exactly as designed. It doesn't go through the template steps.</p></div>
+          <div className="p-5"><p className="flex items-center gap-2 text-lg font-extrabold"><Code2 className="h-5 w-5 text-cobalt" />Import an AI-designed page</p><p className="mt-1 text-sm text-muted-foreground">Paste a page made with an AI tool and publish it exactly as designed. It doesn't go through the template steps.</p></div>
         </button>
       </div>
     </div>

@@ -3,7 +3,7 @@ import { ClientOnly } from "@tanstack/react-router";
 import {
   Hand, Music, Laugh, SmilePlus, HandHeart, Dumbbell, PartyPopper, BadgeCheck, CircleAlert, Zap,
   RotateCcw, RotateCw, Repeat, ZoomIn, ZoomOut, Maximize2, Minimize2, LocateFixed, ScanFace,
-  ArrowLeftRight, FlipHorizontal2, LoaderCircle, Lock, Mountain, Play, ChevronDown, Check, Sparkles, Camera, Smile,
+  ArrowLeftRight, FlipHorizontal2, LoaderCircle, Lock, Mountain, Play, ChevronDown, Check, Zap, Camera, Smile,
   type LucideIcon,
 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/dashboard-ui/dropdown-menu";
@@ -264,7 +264,7 @@ export function CharacterViewer({
           <div className="mt-3 grid gap-2 md:hidden">
             <PlayMenu
               heading="Moves"
-              icon={Sparkles}
+              icon={Zap}
               value={lastMove ? `${SLOT_LABEL[lastMove]} · ${cast.moves[lastMove].name}` : "Choose a move"}
               items={MOVE_SLOTS.filter((sl) => sl !== "signature").map((sl) => ({ id: sl, label: cast.moves[sl].name, hint: SLOT_LABEL[sl], active: lastMove === sl }))}
               onPick={(id) => { setLastMove(id as MoveSlot); play(cast.moves[id as MoveSlot]); }}

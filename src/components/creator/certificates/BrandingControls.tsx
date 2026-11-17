@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Wand2 } from "lucide-react";
+import { BadgeCheck } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/dashboard-ui/button";
 import { Input } from "@/components/dashboard-ui/input";
@@ -58,7 +58,7 @@ export function BrandingControls({ design, onChange, idPrefix, signer, onSigner 
         <div className="flex flex-wrap gap-2">
           {kitHasAnything && (
             <Button type="button" size="sm" onClick={() => { { const patch = kitDesignPatch(kit, sigs[0], sigs[1]); if (sigs[0]) onSigner(sigs[0].name, patch); else onChange(patch); } toast.success("Brand kit applied to this certificate"); }}>
-              <Wand2 aria-hidden="true" />Apply kit
+              <BadgeCheck aria-hidden="true" />Apply kit
             </Button>
           )}
           <Button asChild type="button" size="sm" variant="outline"><Link to="/creator/settings/certificate-branding">Manage kit</Link></Button>
