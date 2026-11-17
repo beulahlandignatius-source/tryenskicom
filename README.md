@@ -80,6 +80,8 @@ The product documentation captures the problem framing, target users, requiremen
 
 - [Read the Enski product case study](docs/case-study/README.md)
 - [Explore the AI-assisted product thinking and prompt-led workflow](docs/case-study/ai-assisted-product-thinking.md)
+- [See the prompting method and iteration log template](docs/case-study/prompting-evidence.md)
+- [Review the implementation status and production-readiness gaps](docs/engineering/implementation-status.md)
 - [Explore the design system](docs/design/design-system.md)
 - [Review the route and feature inventory](docs/research/feature-inventory.md)
 - [See the screenshot capture guide](docs/screenshots/README.md)
@@ -143,7 +145,7 @@ See [authentication architecture](docs/engineering/authentication.md) and [known
 ```text
 docs/
 ├── design/       Design principles and UX decisions
-├── engineering/  Architecture and authentication notes
+├── engineering/  Architecture, authentication and implementation status
 ├── product/      Product brief, requirements, journeys and roadmap
 ├── quality/      Testing strategy and known limitations
 └── research/     Discovery questions and validation plan
