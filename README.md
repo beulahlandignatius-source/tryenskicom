@@ -42,8 +42,8 @@ Technology
 
 The project uses modern web development tools and technologies.
 
-- Frontend: [Add framework used]
-- UI/UX Design: Figma
+- Frontend: Lovable
+- UI/UX Design: Lovable/ Figma 
 - Development: Lovable
 - Version Control: GitHub
 
