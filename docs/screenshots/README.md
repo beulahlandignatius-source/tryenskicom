@@ -33,7 +33,7 @@ A detailed critique and prioritised recommendations are in [the visual product r
 
 ## Capture status and limitations
 
-The screenshots were supplied in this conversation. Several include mobile browser chrome; one creator dashboard capture displays a “No internet connection” browser banner. The screenshot URL text also varies between `tryenski...` and `tryenskicom...`. Before presenting these as a single verified production release, recapture the same flows from the canonical deployed URL with a stable connection and confirm the exact build.
+The screenshots were supplied in this conversation and reviewed for the visual product review. The original image files have not yet been committed to GitHub, so this page documents their coverage rather than embedding a repository image gallery. Several include mobile browser chrome; one creator dashboard capture displays a “No internet connection” browser banner. The screenshot URL text also varies between `tryenski...` and `tryenskicom...`. Before presenting these as a single verified production release, recapture the same flows from the canonical deployed URL with a stable connection and confirm the exact build.
 
 No desktop screenshots, product detail page, full creator product creation flow, payout history, event booking flow or end-to-end mobile journey are included in this batch.
 
