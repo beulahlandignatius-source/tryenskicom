@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUp, Eye, EyeOff, Film, Link2, Loader2, Plus, Sparkles, Star, Trash2, Upload } from "lucide-react";
+import { ArrowDown, ArrowUp, Eye, EyeOff, Film, Link2, Loader2, Plus, Star, Store, Trash2, Upload } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -83,7 +83,7 @@ export function StorePageSettings({ sample = false }: { sample?: boolean }) {
   return (
     <section className="surface overflow-hidden" aria-labelledby="page-settings-title">
       <header className="flex items-center gap-3 border-b px-5 py-4 sm:px-6">
-        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[14px] bg-ice text-cobalt ring-1 ring-line" aria-hidden="true"><Sparkles className="h-[18px] w-[18px]" /></span>
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[14px] bg-ice text-cobalt ring-1 ring-line" aria-hidden="true"><Store className="h-[18px] w-[18px]" /></span>
         <div><h2 id="page-settings-title" className="text-[15px] font-extrabold">Creator page</h2><p className="text-[13px] text-muted-foreground">Accent colour, links, achievements and which products show first. Empty sections stay hidden.</p></div>
       </header>
 

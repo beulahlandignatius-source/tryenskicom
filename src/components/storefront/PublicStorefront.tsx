@@ -1,5 +1,5 @@
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
-import { ArrowLeft, BadgeCheck, BookOpen, Briefcase, Clock, Eye, Flag, Sparkles, Instagram, Linkedin, Share2, Star, Store, Twitter, Youtube } from "lucide-react";
+import { ArrowLeft, BadgeCheck, BookOpen, Briefcase, Clock, Eye, Flag, Instagram, Linkedin, Share2, Star, Store, Twitter, Youtube } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -95,7 +95,7 @@ function Profile({ store, itemId, preview }: { store: PublicStore; itemId?: stri
         <div className="border-b bg-ice px-4 py-2.5 text-center text-[13px] font-bold text-ink dark:bg-soft">
           {preview
             ? <span className="inline-flex flex-wrap items-center justify-center gap-1.5"><Eye className="h-4 w-4 text-cobalt" aria-hidden="true" />Preview{store.hidden ? " · your page is hidden from visitors" : ""}{store.sample ? " · sample products shown" : ""}</span>
-            : <span className="inline-flex items-center gap-1.5"><Sparkles className="h-4 w-4 text-cobalt" aria-hidden="true" />Sample creator page: shows how an Enski storefront looks</span>}
+            : <span className="inline-flex items-center gap-1.5"><Store className="h-4 w-4 text-cobalt" aria-hidden="true" />Sample creator page: shows how an Enski storefront looks</span>}
         </div>
       )}
       <Hero store={store} name={name} intro={intro} hasMore={Boolean(fullBio && fullBio !== intro)} onMore={() => setOpen("bio")} />
